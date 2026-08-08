@@ -1,13 +1,12 @@
 {
-  "name": "思考と行動を整理するボード",
-  "short_name": "整理ボード",
-  "description": "加藤専用のボード・自由帳・達成記録アプリ",
+  "name": "タスク管理ンナー",
+  "short_name": "管理ンナー",
+  "description": "思考と行動を整理するタスク管理アプリ",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#130f2f",
+  "background_color": "#eef2f7",
   "theme_color": "#2563eb",
-  "orientation": "any",
   "icons": [
     {
       "src": "icon-192.png",
