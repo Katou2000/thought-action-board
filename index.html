@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>思考と行動を整理するボード</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#2563eb">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="整理ボード">
+  <link rel="apple-touch-icon" href="icon-192.png">
+</head>
+<body data-theme="minimal" data-density="normal">
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div>
+          <h1>思考と行動を整理しよう。</h1>
+          <p>タスク・メモ・達成記録をひとつに</p>
+        </div>
+        <button id="settingsButton" class="icon-button" type="button" title="設定">⚙</button>
+      </div>
+
+      <div class="sidebar-actions">
+        <input id="boardNameInput" type="text" placeholder="新しいボード名">
+        <button id="addBoardButton" type="button">＋</button>
+      </div>
+
+      <button id="homeButton" class="nav-button" type="button">🏠 ホーム</button>
+      <button id="archiveButton" class="nav-button" type="button">🏆 できたこと</button>
+      <button id="freeboardButton" class="nav-button" type="button">🎨 自由帳</button>
+
+      <div class="sidebar-divider"></div>
+      <p class="sidebar-label">ボード</p>
+      <nav id="boardList" class="board-list"></nav>
+    </aside>
+
+    <button id="mobileMenuButton" class="mobile-menu-button" type="button">☰</button>
+    <main class="main-content">
+      <section id="homeView" class="view hidden">
+        <header class="page-header">
+          <div>
+            <p class="eyebrow">DASHBOARD</p>
+            <h2>ホーム</h2>
+          </div>
+        </header>
+
+        <div class="summary-grid">
+          <article class="summary-card"><span>未完了</span><strong id="openTaskCount">0</strong></article>
+          <article class="summary-card"><span>期限切れ</span><strong id="overdueCount">0</strong></article>
+          <article class="summary-card"><span>今月クリア</span><strong id="monthlyDoneCount">0</strong></article>
+          <article class="summary-card"><span>ボード数</span><strong id="boardCount">0</strong></article>
+        </div>
+
+        <section class="panel">
+          <div class="panel-header"><h3>期限が近いカード</h3></div>
+          <div id="upcomingList" class="list-stack"></div>
+        </section>
+      </section>
+
+      <section id="boardView" class="view">
+        <header class="page-header board-header">
+          <div>
+            <p class="eyebrow">CURRENT BOARD</p>
+            <h2 id="currentBoardTitle" contenteditable="true">ボード名</h2>
+          </div>
+
+          <div class="header-actions">
+            <button id="addSectionButton" class="secondary-button" type="button">＋ 小項目</button>
+            <button id="addCardButton" class="primary-button" type="button">＋ カード</button>
+            <button id="deleteBoardButton" class="danger-outline-button" type="button">削除</button>
+          </div>
+        </header>
+
+        <div class="toolbar">
+          <input id="searchInput" type="search" placeholder="カードを検索">
+          <select id="tagFilter"><option value="">すべてのタグ</option></select>
+          <select id="statusFilter">
+            <option value="all">すべて</option>
+            <option value="open">未完了</option>
+            <option value="done">完了</option>
+            <option value="overdue">期限切れ</option>
+          </select>
+          <select id="sortSelect">
+            <option value="manual">手動順</option>
+            <option value="dueAsc">期限が近い順</option>
+            <option value="dueDesc">期限が遠い順</option>
+            <option value="createdDesc">新しい順</option>
+            <option value="createdAsc">古い順</option>
+          </select>
+        </div>
+
+        <div id="sectionBoard" class="section-board"></div>
+      </section>
+
+      <section id="archiveView" class="view hidden">
+        <header class="page-header">
+          <div>
+            <p class="eyebrow">ARCHIVE</p>
+            <h2>できたこと</h2>
+          </div>
+        </header>
+        <div class="toolbar toolbar-archive">
+          <input id="archiveSearchInput" type="search" placeholder="達成記録を検索">
+          <select id="archiveBoardFilter"><option value="">すべてのボード</option></select>
+        </div>
+        <div id="archiveList" class="archive-grid"></div>
+      </section>
+
+      <section id="freeboardView" class="view hidden">
+        <header class="page-header">
+          <div>
+            <p class="eyebrow">FREE BOARD</p>
+            <h2>自由帳</h2>
+          </div>
+          <div class="header-actions">
+            <button id="addFreeNoteButton" class="primary-button" type="button">＋ 付箋</button>
+            <label class="secondary-button file-label">＋ 画像<input id="freeImageInput" type="file" accept="image/*"></label>
+            <button id="clearFreeboardButton" class="danger-outline-button" type="button">全消去</button>
+          </div>
+        </header>
+        <p class="freeboard-help">付箋や画像をドラッグして好きな位置へ動かせます。付箋はダブルクリックで編集できます。</p>
+        <div id="freeCanvas" class="free-canvas"></div>
+      </section>
+    </main>
+  </div>
+
+  <div id="cardModal" class="modal hidden">
+    <div class="modal-backdrop" data-close="cardModal"></div>
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 id="cardModalTitle">カードを追加</h2>
+        <button class="close-button" data-close="cardModal" type="button">×</button>
+      </div>
+
+      <div class="form-grid">
+        <label>種類
+          <select id="cardTypeInput">
+            <option value="task">タスク</option>
+            <option value="memo">メモ</option>
+            <option value="idea">アイデア</option>
+            <option value="link">リンク</option>
+            <option value="image">画像</option>
+          </select>
+        </label>
+
+        <label>小項目
+          <select id="cardSectionInput"></select>
+        </label>
+
+        <label class="full">タイトル
+          <input id="cardTitleInput" type="text" placeholder="カードのタイトル">
+        </label>
+
+        <label class="full">内容
+          <textarea id="cardContentInput" placeholder="メモや詳細"></textarea>
+        </label>
+
+        <label>期限
+          <input id="cardDueInput" type="date">
+        </label>
+
+        <label>タグ
+          <input id="cardTagsInput" type="text" placeholder="就活, 重要, 今日">
+        </label>
+
+        <label>色
+          <select id="cardColorInput">
+            <option value="yellow">黄色</option>
+            <option value="blue">青</option>
+            <option value="green">緑</option>
+            <option value="pink">ピンク</option>
+            <option value="purple">紫</option>
+            <option value="orange">オレンジ</option>
+            <option value="white">白</option>
+          </select>
+        </label>
+
+        <label>画像
+          <input id="cardImageInput" type="file" accept="image/*">
+        </label>
+
+        <label class="full">リンク
+          <input id="cardLinkInput" type="url" placeholder="https://...">
+        </label>
+      </div>
+
+      <div id="imagePreviewWrap" class="image-preview-wrap hidden">
+        <img id="imagePreview" alt="画像プレビュー">
+        <button id="removeImageButton" class="danger-outline-button" type="button">画像を外す</button>
+      </div>
+
+      <div class="modal-actions">
+        <button class="secondary-button" data-close="cardModal" type="button">キャンセル</button>
+        <button id="saveCardButton" class="primary-button" type="button">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="settingsModal" class="modal hidden">
+    <div class="modal-backdrop" data-close="settingsModal"></div>
+    <div class="modal-card small-modal">
+      <div class="modal-header">
+        <h2>表示設定</h2>
+        <button class="close-button" data-close="settingsModal" type="button">×</button>
+      </div>
+
+      <label>テーマ
+        <select id="themeSelect">
+          <option value="minimal">Normal</option>
+          <option value="cork">Cork</option>
+          <option value="dopamine">DOPA-BOY</option>
+        </select>
+      </label>
+
+      <label>アクセント色
+        <input id="accentColorInput" type="color" value="#2563eb">
+      </label>
+
+      <label>カード密度
+        <select id="densitySelect">
+          <option value="normal">標準</option>
+          <option value="compact">コンパクト</option>
+          <option value="large">ゆったり</option>
+        </select>
+      </label>
+
+      <div class="modal-actions">
+        <button id="installAppButton" class="primary-button hidden" type="button">アプリとして追加</button>
+        <button id="exportButton" class="secondary-button" type="button">バックアップ保存</button>
+        <label class="secondary-button file-label">読み込み<input id="importInput" type="file" accept=".json,application/json"></label>
+        <button class="primary-button" data-close="settingsModal" type="button">閉じる</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./service-worker.js")
+          .catch(error => console.error("Service Worker registration failed:", error));
+      });
+    }
+  </script>
+</body>
+</html>
