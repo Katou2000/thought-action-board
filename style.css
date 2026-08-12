@@ -40,3 +40,679 @@ body[data-theme="dopaboy"] .completion-toast small{color:#fff}
 body[data-density="compact"] .memo-card{min-height:135px;padding:12px}body[data-density="large"] .memo-card{min-height:230px;padding:20px}
 @media(max-width:900px){.mobile-menu-button{display:block}.sidebar{position:fixed;width:min(84vw,320px);height:100vh;transform:translateX(-105%);transition:.22s}.sidebar.open{transform:translateX(0)}.main-content{width:100%;margin-left:0;padding:72px 16px 22px}.toolbar,.toolbar-archive{grid-template-columns:1fr}.summary-grid{grid-template-columns:1fr 1fr}.header-actions{display:grid;grid-template-columns:1fr 1fr;width:100%}.card-grid{grid-template-columns:1fr}.selection-bar{flex-direction:column;align-items:stretch}}
 @media(max-width:520px){.summary-grid{grid-template-columns:1fr}.header-actions{grid-template-columns:1fr}.modal{align-items:flex-end;padding:0}.modal-card{width:100%;border-radius:18px 18px 0 0}.form-grid{grid-template-columns:1fr}.form-grid label.full{grid-column:auto}}
+
+
+/* ===== Task Kanrinner v2 additions ===== */
+
+/* DOPA-BOY: modal / controls readability */
+body[data-theme="dopaboy"] .modal-card,
+body[data-theme="dopaboy"] .small-modal,
+body[data-theme="dopaboy"] .quick-memo-editor,
+body[data-theme="dopaboy"] .milestone-form-panel,
+body[data-theme="dopaboy"] .calendar-panel,
+body[data-theme="dopaboy"] .gantt-panel {
+  color: var(--text);
+  background: #221a48;
+}
+body[data-theme="dopaboy"] .modal-card label,
+body[data-theme="dopaboy"] .small-modal label,
+body[data-theme="dopaboy"] .modal-header h2,
+body[data-theme="dopaboy"] .calendar-toolbar h3 {
+  color: #f7f3ff;
+}
+body[data-theme="dopaboy"] .modal-card input,
+body[data-theme="dopaboy"] .modal-card textarea,
+body[data-theme="dopaboy"] .modal-card select,
+body[data-theme="dopaboy"] .small-modal input,
+body[data-theme="dopaboy"] .small-modal select,
+body[data-theme="dopaboy"] .memo-title-input,
+body[data-theme="dopaboy"] .memo-textarea,
+body[data-theme="dopaboy"] .milestone-form input,
+body[data-theme="dopaboy"] .milestone-form select {
+  background:#15102f;
+  color:#fff;
+  border-color:#5e4d92;
+}
+body[data-theme="dopaboy"] .close-button {
+  background:#3a2d68;
+  color:#fff;
+}
+body[data-theme="dopaboy"] .secondary-button {
+  background:#2e2455;
+  color:#fff;
+  border-color:#5e4d92;
+}
+
+/* Calendar */
+.calendar-panel{margin-top:22px}
+.calendar-toolbar{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:14px}
+.calendar-toolbar h3{margin:0;min-width:150px;text-align:center}
+.calendar-weekdays,.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.calendar-weekdays span{padding:7px;text-align:center;color:var(--muted);font-size:12px;font-weight:700}
+.calendar-day{
+  min-height:92px;padding:8px;border:1px solid var(--border);border-radius:9px;
+  background:var(--panel);cursor:pointer;overflow:hidden
+}
+.calendar-day.outside{opacity:.38}
+.calendar-day.today{outline:2px solid var(--accent)}
+.calendar-day.selected{box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 25%,transparent)}
+.calendar-date-number{font-size:12px;font-weight:800}
+.calendar-task-dot{
+  display:block;margin-top:5px;padding:3px 5px;border-radius:5px;
+  background:color-mix(in srgb,var(--accent) 13%,var(--panel));
+  font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+}
+.calendar-more{margin-top:4px;color:var(--muted);font-size:10px}
+.calendar-day-detail{margin-top:14px;padding-top:14px;border-top:1px solid var(--border)}
+.calendar-day-detail h4{margin:0 0 8px}
+.calendar-detail-item{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--border)}
+
+/* Freeboard pages + resize */
+.free-page-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.free-page-tab{
+  border:1px solid var(--border);background:var(--panel);color:var(--text);
+  border-radius:999px;padding:8px 12px
+}
+.free-page-tab.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.free-item{
+  padding:12px 42px 12px 12px;
+  resize:both;
+  overflow:auto;
+  min-width:120px;
+  min-height:80px;
+  max-width:90%;
+  max-height:90%
+}
+.free-image{padding:6px 38px 6px 6px}
+.free-image img{width:100%;height:100%;max-width:none;max-height:none;object-fit:contain;pointer-events:none}
+.free-delete{
+  top:6px;right:6px;z-index:4;background:#fff;color:#111;
+  box-shadow:0 2px 8px rgba(0,0,0,.18)
+}
+body[data-theme="dopaboy"] .free-delete{background:#fff;color:#111}
+
+/* Quick memo */
+.memo-workspace{display:grid;grid-template-columns:250px minmax(0,1fr);gap:16px;min-height:640px}
+.quick-memo-list{display:flex;flex-direction:column;gap:8px}
+.quick-memo-list-item{
+  width:100%;padding:11px 12px;border:1px solid var(--border);border-radius:9px;
+  background:var(--panel);color:var(--text);text-align:left
+}
+.quick-memo-list-item.active{border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 18%,transparent)}
+.quick-memo-list-item small{display:block;margin-top:5px;color:var(--muted)}
+.quick-memo-editor{display:flex;flex-direction:column;gap:12px}
+.memo-title-input{
+  width:100%;border:0;border-bottom:1px solid var(--border);padding:12px 4px;
+  background:transparent;color:var(--text);font-size:22px;font-weight:800;outline:none
+}
+.memo-textarea{
+  width:100%;min-height:500px;resize:vertical;border:1px solid var(--border);
+  border-radius:10px;padding:14px;background:var(--panel);color:var(--text);line-height:1.7
+}
+.memo-editor-footer{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:12px}
+
+/* Milestones / Gantt */
+.milestone-form{display:grid;grid-template-columns:minmax(180px,1.4fr) repeat(4,minmax(120px,.7fr));gap:10px;align-items:end}
+.milestone-form label{font-size:12px;color:var(--muted)}
+.milestone-form input,.milestone-form select{
+  width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;background:var(--panel);color:var(--text)
+}
+.gantt-panel{overflow-x:auto}
+.gantt-header{position:relative;min-width:900px;height:42px;margin-left:220px;border-bottom:1px solid var(--border)}
+.gantt-month{
+  position:absolute;top:0;height:100%;border-left:1px solid var(--border);padding:8px;color:var(--muted);font-size:12px
+}
+.gantt-row{display:grid;grid-template-columns:220px minmax(900px,1fr);min-height:64px;border-bottom:1px solid var(--border)}
+.gantt-info{padding:10px 12px 10px 0}
+.gantt-info strong{display:block}
+.gantt-info small{color:var(--muted)}
+.gantt-track{position:relative;background:repeating-linear-gradient(90deg,transparent,transparent calc(16.666% - 1px),var(--border) calc(16.666% - 1px),var(--border) 16.666%)}
+.gantt-bar{
+  position:absolute;top:15px;height:32px;min-width:12px;border-radius:8px;
+  background:var(--accent);color:#fff;padding:7px 9px;font-size:11px;white-space:nowrap;overflow:hidden
+}
+.gantt-bar.done{opacity:.58}
+.gantt-bar.hold{filter:grayscale(.55);opacity:.7}
+.gantt-row-actions{display:flex;gap:6px;margin-top:6px}
+.gantt-row-actions button{padding:3px 7px;font-size:11px;border-radius:6px;border:1px solid var(--border);background:var(--panel);color:var(--text)}
+
+@media(max-width:900px){
+  .calendar-day{min-height:72px;padding:5px}
+  .calendar-task-dot{font-size:9px}
+  .memo-workspace{grid-template-columns:1fr;min-height:auto}
+  .quick-memo-list{display:grid;grid-template-columns:repeat(2,1fr)}
+  .milestone-form{grid-template-columns:1fr 1fr}
+}
+@media(max-width:520px){
+  .calendar-day{min-height:58px}
+  .calendar-task-dot{display:none}
+  .quick-memo-list{grid-template-columns:1fr}
+  .milestone-form{grid-template-columns:1fr}
+}
+
+
+/* ===== Task Kanrinner v3 ===== */
+
+/* Freeboard: card header keeps controls away from memo/image content. */
+.free-item{
+  padding:0 !important;
+  overflow:visible !important;
+  resize:both;
+  min-width:140px;
+  min-height:95px;
+}
+.free-item-toolbar{
+  height:34px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  padding:5px 6px 5px 10px;
+  border-bottom:1px solid rgba(0,0,0,.10);
+  border-radius:8px 8px 0 0;
+  background:rgba(255,255,255,.78);
+  cursor:grab;
+  user-select:none;
+}
+.free-item-toolbar:active{cursor:grabbing}
+.free-drag-label{
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  font-size:11px;
+  font-weight:700;
+  opacity:.6
+}
+.free-delete{
+  position:static !important;
+  flex:0 0 auto;
+  width:25px;
+  height:25px;
+  border:0;
+  border-radius:7px;
+  display:grid;
+  place-items:center;
+  background:#fff;
+  color:#111;
+  font-weight:900;
+  box-shadow:0 1px 5px rgba(0,0,0,.16);
+}
+.free-item-body{
+  width:100%;
+  height:calc(100% - 34px);
+  min-height:55px;
+  overflow:auto;
+  padding:10px 12px;
+  border-radius:0 0 8px 8px;
+}
+.free-note .free-item-body{
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+  word-break:break-word;
+}
+.free-image .free-item-body{padding:6px}
+.free-image .free-item-body img{
+  display:block;
+  width:100%;
+  height:100%;
+  max-width:none;
+  max-height:none;
+  object-fit:contain;
+  pointer-events:none;
+}
+
+/* DOPA-BOY readability: calendar + freeboard */
+body[data-theme="dopaboy"] .calendar-day{
+  background:#2b2252;
+  color:#fff;
+  border-color:#61538e;
+}
+body[data-theme="dopaboy"] .calendar-day.outside{opacity:.58}
+body[data-theme="dopaboy"] .calendar-date-number{color:#fff}
+body[data-theme="dopaboy"] .calendar-task-dot{
+  background:#f7f3ff;
+  color:#241b45;
+  font-weight:700;
+}
+body[data-theme="dopaboy"] .calendar-more,
+body[data-theme="dopaboy"] .calendar-weekdays span,
+body[data-theme="dopaboy"] .calendar-day-detail small{
+  color:#ddd4ff;
+}
+body[data-theme="dopaboy"] .calendar-day-detail,
+body[data-theme="dopaboy"] .calendar-detail-item{
+  color:#fff;
+}
+body[data-theme="dopaboy"] .free-canvas{
+  background:
+    radial-gradient(circle at 20% 10%,rgba(0,225,255,.08),transparent 35%),
+    radial-gradient(circle at 90% 90%,rgba(255,0,170,.08),transparent 35%),
+    #16112f;
+  border-color:#625294;
+}
+body[data-theme="dopaboy"] .free-item-toolbar{
+  background:#201941;
+  color:#fff;
+  border-color:#51447b;
+}
+body[data-theme="dopaboy"] .free-note .free-item-body{
+  background:#fff4b8;
+  color:#1f2937;
+}
+body[data-theme="dopaboy"] .free-image .free-item-body{
+  background:#15102f;
+}
+body[data-theme="dopaboy"] .free-delete{
+  background:#fff;
+  color:#111;
+}
+body[data-theme="dopaboy"] .free-page-tab{
+  background:#2c2352;
+  color:#fff;
+  border-color:#594a89;
+}
+body[data-theme="dopaboy"] .free-page-tab.active{
+  background:var(--accent);
+  color:#fff;
+}
+
+/* Goal Builder */
+.goal-builder-help{
+  margin:-10px 0 20px;
+  color:var(--muted);
+}
+.goal-tower-list{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(330px,1fr));
+  gap:20px;
+}
+.goal-tower{
+  position:relative;
+  overflow:hidden;
+  padding:18px;
+  border:1px solid var(--border);
+  border-radius:18px;
+  background:var(--panel);
+  box-shadow:var(--shadow);
+}
+.goal-tower::after{
+  content:"";
+  position:absolute;
+  inset:auto -50px -70px auto;
+  width:150px;
+  height:150px;
+  border-radius:50%;
+  background:color-mix(in srgb,var(--accent) 8%,transparent);
+  pointer-events:none;
+}
+.goal-tower-head{
+  position:relative;
+  z-index:1;
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  align-items:flex-start;
+  margin-bottom:14px;
+}
+.goal-tower-title{
+  margin:0;
+  font-size:22px;
+}
+.goal-meta{
+  margin-top:5px;
+  color:var(--muted);
+  font-size:12px;
+}
+.goal-head-actions{
+  display:flex;
+  gap:6px;
+}
+.goal-head-actions button{
+  border:1px solid var(--border);
+  background:var(--panel);
+  color:var(--text);
+  border-radius:7px;
+  padding:6px 8px;
+}
+.goal-finish{
+  position:relative;
+  z-index:1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:70px;
+  margin:0 auto 10px;
+  padding:10px 18px;
+  border:2px solid var(--accent);
+  border-radius:16px;
+  background:color-mix(in srgb,var(--accent) 10%,var(--panel));
+  text-align:center;
+  font-weight:900;
+}
+.goal-path{
+  position:relative;
+  z-index:1;
+  display:flex;
+  flex-direction:column-reverse;
+  gap:7px;
+  padding:7px 16px 4px;
+}
+.goal-path::before{
+  content:"";
+  position:absolute;
+  left:50%;
+  top:0;
+  bottom:0;
+  width:3px;
+  transform:translateX(-50%);
+  background:color-mix(in srgb,var(--accent) 20%,var(--border));
+  border-radius:999px;
+  z-index:-1;
+}
+.goal-block{
+  position:relative;
+  display:grid;
+  grid-template-columns:34px minmax(0,1fr) auto;
+  align-items:center;
+  gap:8px;
+  width:100%;
+  min-height:54px;
+  padding:8px 9px;
+  border:1px solid var(--border);
+  border-radius:11px;
+  background:var(--panel);
+  box-shadow:0 5px 12px rgba(15,23,42,.07);
+}
+.goal-block:nth-child(odd){transform:translateX(-8px)}
+.goal-block:nth-child(even){transform:translateX(8px)}
+.goal-block.done{
+  background:color-mix(in srgb,var(--success) 12%,var(--panel));
+  border-color:color-mix(in srgb,var(--success) 40%,var(--border));
+}
+.goal-block-number{
+  display:grid;
+  place-items:center;
+  width:30px;
+  height:30px;
+  border-radius:8px;
+  background:color-mix(in srgb,var(--accent) 12%,var(--panel));
+  font-size:12px;
+  font-weight:900;
+}
+.goal-block-title{
+  min-width:0;
+  font-weight:750;
+  overflow-wrap:anywhere;
+}
+.goal-block-actions{
+  display:flex;
+  gap:5px;
+}
+.goal-block-actions button{
+  width:31px;
+  height:31px;
+  border:1px solid var(--border);
+  border-radius:8px;
+  background:var(--panel);
+  color:var(--text);
+}
+.goal-progress-wrap{
+  position:relative;
+  z-index:1;
+  margin-top:14px;
+}
+.goal-progress-line{
+  height:10px;
+  overflow:hidden;
+  border-radius:999px;
+  background:color-mix(in srgb,var(--border) 60%,transparent);
+}
+.goal-progress-fill{
+  height:100%;
+  border-radius:999px;
+  background:var(--accent);
+  transition:width .2s ease;
+}
+.goal-progress-label{
+  display:flex;
+  justify-content:space-between;
+  margin-top:6px;
+  color:var(--muted);
+  font-size:12px;
+}
+.goal-add-block{
+  width:100%;
+  margin-top:12px;
+  border:1px dashed var(--border);
+  border-radius:10px;
+  padding:9px;
+  background:transparent;
+  color:var(--text);
+}
+.goal-empty-blocks{
+  text-align:center;
+  color:var(--muted);
+  padding:14px;
+}
+body[data-theme="dopaboy"] .goal-tower{
+  background:#211a46;
+  color:#fff;
+  border-color:#574982;
+}
+body[data-theme="dopaboy"] .goal-finish{
+  background:#30255c;
+  color:#fff;
+}
+body[data-theme="dopaboy"] .goal-block{
+  background:#2b2252;
+  color:#fff;
+  border-color:#5f508c;
+}
+body[data-theme="dopaboy"] .goal-block.done{
+  background:#16482d;
+  border-color:#3fb56c;
+}
+body[data-theme="dopaboy"] .goal-head-actions button,
+body[data-theme="dopaboy"] .goal-block-actions button{
+  background:#17122f;
+  color:#fff;
+  border-color:#5b4b88;
+}
+body[data-theme="dopaboy"] .goal-add-block{
+  color:#fff;
+  border-color:#6a5a97;
+}
+
+@media(max-width:520px){
+  .goal-tower-list{grid-template-columns:1fr}
+  .goal-block:nth-child(odd),
+  .goal-block:nth-child(even){transform:none}
+}
+\n\n/* ===== Task Kanrinner v4 ===== */\n.free-history-disabled{opacity:.45;pointer-events:none}\n.goal-complete-button{width:100%;margin-top:10px;padding:11px 14px;border:0;border-radius:10px;background:var(--success);color:#fff;font-weight:850}\n.goal-complete-button:disabled{opacity:.5;cursor:not-allowed}\n.goal-complete-hint{margin:7px 0 0;color:var(--muted);font-size:11px;text-align:center}\nbody[data-theme="dopaboy"] .goal-complete-button{box-shadow:0 0 18px rgba(44,255,128,.25)}\n.achievement-summary-grid{display:grid;grid-template-columns:repeat(2,minmax(0,240px));gap:16px;margin-bottom:22px}\n.achieved-goal-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}\n.achieved-goal-card{position:relative;overflow:hidden;padding:18px;border:1px solid var(--border);border-radius:16px;background:var(--panel);box-shadow:var(--shadow)}\n.achieved-goal-card::after{content:"🏆";position:absolute;right:-8px;bottom:-16px;font-size:76px;opacity:.07;pointer-events:none}\n.achieved-goal-card h3{margin:0 0 8px;font-size:21px}.achieved-goal-meta{color:var(--muted);font-size:12px;line-height:1.6}\n.achieved-goal-blocks{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0}.achieved-goal-block{padding:5px 8px;border-radius:999px;background:color-mix(in srgb,var(--success) 10%,var(--panel));border:1px solid color-mix(in srgb,var(--success) 25%,var(--border));font-size:11px}\n.achieved-goal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}\nbody[data-theme="dopaboy"] .achieved-goal-card{background:#211a46;color:#fff;border-color:#574982}\nbody[data-theme="dopaboy"] .achieved-goal-block{background:#163d29;color:#eafff0;border-color:#3a8d5e}\n@media(max-width:520px){.achievement-summary-grid{grid-template-columns:1fr 1fr}}\n
+
+/* ===== Task Kanrinner v5 stability/readability fixes ===== */
+
+/* Freeboard items: content never competes with the delete button. */
+.free-item{
+  padding:0 !important;
+  overflow:visible !important;
+  resize:both;
+}
+.free-item-toolbar{
+  position:relative;
+  z-index:3;
+  height:36px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  padding:5px 6px 5px 10px;
+}
+.free-item-body{
+  height:calc(100% - 36px);
+  min-height:55px;
+  overflow:auto;
+  padding:10px 12px;
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+  word-break:break-word;
+}
+.free-delete{
+  position:static !important;
+  inset:auto !important;
+  flex:0 0 auto;
+  width:26px;
+  height:26px;
+  display:grid;
+  place-items:center;
+  padding:0;
+  line-height:1;
+}
+.free-image .free-item-body{padding:6px}
+.free-image .free-item-body img{
+  display:block;
+  width:100%;
+  height:100%;
+  max-width:none;
+  max-height:none;
+  object-fit:contain;
+}
+
+/* Undo/redo disabled state */
+.free-history-disabled{
+  opacity:.42;
+  pointer-events:none;
+}
+
+/* Calendar: give date numbers enough breathing room in every theme. */
+.calendar-date-number{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:30px;
+  height:30px;
+  padding:0 7px;
+  border-radius:9px;
+  line-height:1;
+  font-weight:850;
+}
+.calendar-day{
+  min-height:100px;
+  line-height:1.35;
+}
+.calendar-task-dot{
+  padding:5px 7px;
+  line-height:1.35;
+}
+
+/* DOPA calendar readability */
+body[data-theme="dopaboy"] .calendar-day{
+  background:#251d49;
+  color:#fff;
+  border-color:#68599b;
+}
+body[data-theme="dopaboy"] .calendar-date-number{
+  background:#f4efff;
+  color:#241b45;
+  box-shadow:0 0 0 1px rgba(255,255,255,.18);
+}
+body[data-theme="dopaboy"] .calendar-day.today .calendar-date-number{
+  background:#66f4ff;
+  color:#101322;
+  box-shadow:0 0 14px rgba(102,244,255,.4);
+}
+body[data-theme="dopaboy"] .calendar-day.selected{
+  outline:2px solid #ff67cf;
+  outline-offset:1px;
+}
+body[data-theme="dopaboy"] .calendar-task-dot{
+  background:#f7f3ff;
+  color:#241b45;
+  font-weight:700;
+}
+body[data-theme="dopaboy"] .calendar-day-detail,
+body[data-theme="dopaboy"] .calendar-detail-item{
+  color:#fff;
+}
+body[data-theme="dopaboy"] .calendar-day-detail small,
+body[data-theme="dopaboy"] .calendar-weekdays span,
+body[data-theme="dopaboy"] .calendar-more{
+  color:#ded6ff;
+}
+
+/* DOPA due-date/repeat chips: no cramped pill text. */
+body[data-theme="dopaboy"] .memo-card .due-chip,
+body[data-theme="dopaboy"] .memo-card .repeat-chip{
+  display:inline-flex;
+  align-items:center;
+  min-height:30px;
+  padding:6px 10px;
+  line-height:1.25;
+  background:#f5f1ff;
+  color:#241b45;
+  font-weight:700;
+}
+body[data-theme="dopaboy"] .memo-card .due-chip.overdue{
+  background:#ffe2e8;
+  color:#951b35;
+}
+
+/* Freeboard in DOPA */
+body[data-theme="dopaboy"] .free-canvas{
+  background:
+    radial-gradient(circle at 20% 10%,rgba(0,225,255,.08),transparent 35%),
+    radial-gradient(circle at 90% 90%,rgba(255,0,170,.08),transparent 35%),
+    #15102f;
+}
+body[data-theme="dopaboy"] .free-item-toolbar{
+  background:#211943;
+  color:#fff;
+  border-color:#5f508c;
+}
+body[data-theme="dopaboy"] .free-note .free-item-body{
+  background:#fff4b8;
+  color:#1f2937;
+}
+body[data-theme="dopaboy"] .free-image .free-item-body{
+  background:#15102f;
+}
+body[data-theme="dopaboy"] .free-delete{
+  background:#fff;
+  color:#111;
+}
+
+/* Goal builder controls stay readable */
+.goal-complete-button{
+  width:100%;
+  margin-top:10px;
+  padding:11px 14px;
+  border:0;
+  border-radius:10px;
+  background:var(--success);
+  color:#fff;
+  font-weight:850;
+}
+.goal-complete-button:disabled{
+  opacity:.45;
+  cursor:not-allowed;
+}
+.goal-complete-hint{
+  margin:7px 0 0;
+  color:var(--muted);
+  font-size:11px;
+  text-align:center;
+}
+
+@media(max-width:520px){
+  .calendar-day{
+    min-height:66px;
+    padding:5px;
+  }
+  .calendar-date-number{
+    min-width:27px;
+    height:27px;
+    padding:0 5px;
+  }
+  .calendar-task-dot{display:none}
+}

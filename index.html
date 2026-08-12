@@ -16,7 +16,7 @@
 <div class="app">
 <aside class="sidebar">
   <div class="brand">
-    <div><h1>タスク管理ンナー</h1><p>タスク整理と管理</p></div>
+    <div><h1>タスク管理ンナー</h1><p>やること整理ンヤー</p></div>
     <button id="settingsButton" class="icon-button">⚙</button>
   </div>
   <div class="sidebar-actions">
@@ -27,6 +27,9 @@
   <button id="homeButton" class="nav-button">🏠 ホーム</button>
   <button id="archiveButton" class="nav-button">✅ 完了したこと</button>
   <button id="freeboardButton" class="nav-button">🗒 自由帳</button>
+  <button id="memoButton" class="nav-button">📝 メモ</button>
+  <button id="milestoneButton" class="nav-button">📊 目標ビルダー</button>
+  <button id="achievedGoalsButton" class="nav-button">🏆 達成した目標</button>
   <div class="sidebar-divider"></div>
   <p class="sidebar-label">ボード</p>
   <nav id="boardList" class="board-list"></nav>
@@ -36,6 +39,20 @@
   <section id="todayView" class="view hidden">
     <header class="page-header"><div><p class="eyebrow">TODAY</p><h2>今日やること</h2></div></header>
     <div id="todayList" class="today-list"></div>
+
+    <section class="panel calendar-panel">
+      <div class="calendar-toolbar">
+        <button id="calendarPrevButton" class="secondary-button">←</button>
+        <h3 id="calendarMonthLabel"></h3>
+        <button id="calendarTodayButton" class="secondary-button">今月</button>
+        <button id="calendarNextButton" class="secondary-button">→</button>
+      </div>
+      <div class="calendar-weekdays">
+        <span>日</span><span>月</span><span>火</span><span>水</span><span>木</span><span>金</span><span>土</span>
+      </div>
+      <div id="calendarGrid" class="calendar-grid"></div>
+      <div id="calendarDayDetail" class="calendar-day-detail"></div>
+    </section>
   </section>
 
   <section id="homeView" class="view hidden">
@@ -99,14 +116,77 @@
     <header class="page-header">
       <div><p class="eyebrow">FREE BOARD</p><h2>自由帳</h2></div>
       <div class="header-actions">
+        <button id="undoFreeboardButton" class="secondary-button" title="ひとつ戻す">↶ 戻す</button>
+        <button id="redoFreeboardButton" class="secondary-button" title="ひとつ進む">↷ 進む</button>
+        <button id="addFreePageButton" class="secondary-button">＋ ページ</button>
+        <button id="renameFreePageButton" class="secondary-button">ページ名変更</button>
         <button id="addFreeNoteButton" class="primary-button">＋ 付箋</button>
         <label class="secondary-button file-label">＋ 画像<input id="freeImageInput" type="file" accept="image/*"></label>
         <button id="clearFreeboardButton" class="danger-outline-button">全消去</button>
       </div>
     </header>
-    <p class="freeboard-help">付箋や画像をドラッグして好きな位置へ動かせます。</p>
+    <div id="freePageTabs" class="free-page-tabs"></div>
+    <p class="freeboard-help">付箋や画像をドラッグして移動できます。右下をドラッグするとサイズ変更できます。</p>
     <div id="freeCanvas" class="free-canvas"></div>
   </section>
+
+  <section id="memoView" class="view hidden">
+    <header class="page-header">
+      <div><p class="eyebrow">MEMO</p><h2>メモ</h2></div>
+      <div class="header-actions">
+        <button id="addQuickMemoButton" class="primary-button">＋ メモ</button>
+      </div>
+    </header>
+    <div class="memo-workspace">
+      <aside id="quickMemoList" class="quick-memo-list"></aside>
+      <section class="quick-memo-editor panel">
+        <input id="quickMemoTitle" class="memo-title-input" placeholder="タイトル">
+        <textarea id="quickMemoContent" class="memo-textarea" placeholder="ここにメモを書く"></textarea>
+        <div class="memo-editor-footer">
+          <span id="quickMemoSavedLabel">自動保存</span>
+          <button id="deleteQuickMemoButton" class="danger-outline-button">このメモを削除</button>
+        </div>
+      </section>
+    </div>
+  </section>
+
+  
+  <section id="milestoneView" class="view hidden">
+    <header class="page-header">
+      <div><p class="eyebrow">GOAL BUILDER</p><h2>目標ビルダー</h2></div>
+      <div class="header-actions">
+        <button id="addGoalButton" class="primary-button">＋ 目標を作る</button>
+      </div>
+    </header>
+
+    <p class="goal-builder-help">
+      ゴールに必要な要件をブロックとして積み上げていくページです。
+    </p>
+
+    <div id="goalTowerList" class="goal-tower-list"></div>
+
+    <!-- v2 milestone compatibility: old JS references these IDs -->
+    <div class="hidden">
+      <button id="addMilestoneButton"></button>
+      <input id="milestoneNameInput">
+      <input id="milestoneStartInput" type="date">
+      <input id="milestoneEndInput" type="date">
+      <input id="milestoneProgressInput" type="number" value="0">
+      <select id="milestoneStatusInput"><option value="planned">planned</option></select>
+      <div id="ganttHeader"></div>
+      <div id="ganttRows"></div>
+    </div>
+  </section>
+
+  <section id="achievedGoalsView" class="view hidden">
+    <header class="page-header"><div><p class="eyebrow">ACHIEVEMENTS</p><h2>達成した目標</h2></div></header>
+    <div class="achievement-summary-grid">
+      <article class="summary-card"><span>達成した目標</span><strong id="achievedGoalCount">0</strong></article>
+      <article class="summary-card"><span>今月の達成</span><strong id="achievedGoalMonthCount">0</strong></article>
+    </div>
+    <div id="achievedGoalList" class="achieved-goal-list"></div>
+  </section>
+
 </main>
 </div>
 
