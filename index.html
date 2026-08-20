@@ -1,248 +1,432 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>タスク管理ンナー</title>
-<link rel="stylesheet" href="style.css">
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#2563eb">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="タスク管理ンナー">
-<link rel="apple-touch-icon" href="icon-192.png">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>タスク管理ンナー</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#2563eb">
+  <meta name="application-name" content="タスク管理ンナー">
+  <link rel="apple-touch-icon" href="icon-192.png">
 </head>
-<body data-theme="normal" data-density="normal">
-<button id="mobileMenuButton" class="mobile-menu-button">☰</button>
-<div class="app">
-<aside class="sidebar">
-  <div class="brand">
-    <div><h1>タスク管理ンナー</h1><p>やること整理ンヤー</p></div>
-    <button id="settingsButton" class="icon-button">⚙</button>
+<body data-theme="simple" data-density="normal" data-dopa-motion="on" data-nav-position="left" data-quick-fab-position="bottom-right">
+  <div id="dopaBanner" class="dopa-banner">I dedicate this mode to all the Hyper DOPA-BOYs.</div>
+  <div id="dopaStickerLayer" class="dopa-sticker-layer" aria-hidden="true">
+    <span class="dopa-sticker dopa-gem">◆</span>
+    <span class="dopa-sticker dopa-star">✦</span>
+    <span class="dopa-sticker dopa-crab">🦀</span>
+    <span class="dopa-sticker dopa-game">🎮</span>
+    <span class="dopa-sticker dopa-neon">ADRENALINE</span>
+    <span class="dopa-sticker dopa-can">⚡</span>
+    <span class="dopa-sticker dopa-spark">★</span>
+    <span class="dopa-sticker dopa-keycap">GG</span>
+    <span class="dopa-sticker dopa-level">LEVEL UP</span>
+    <span class="dopa-sticker dopa-rgb">RGB</span>
+    <span class="dopa-sticker dopa-ping">PING!</span>
+    <span class="dopa-sticker dopa-starburst">✦</span>
+    <span class="dopa-sticker dopa-star-mini">★</span>
+    <span class="dopa-sticker dopa-star-mini2">✧</span>
+    <span class="dopa-sticker dopa-gem2">💎</span>
+    <span class="dopa-sticker dopa-headset">🎧</span>
+    <span class="dopa-sticker dopa-mouse">🖱️</span>
+    <span class="dopa-sticker dopa-keyboard">⌨️</span>
+    <span class="dopa-sticker dopa-joystick">🕹️</span>
+    <span class="dopa-sticker dopa-battery">🔋</span>
+    <span class="dopa-sticker dopa-sparkle">✨</span>
   </div>
-  <div class="sidebar-actions">
-    <input id="boardNameInput" placeholder="新しいボード名">
-    <button id="addBoardButton">＋</button>
-  </div>
-  <button id="todayButton" class="nav-button">📅 今日</button>
-  <button id="homeButton" class="nav-button">🏠 ホーム</button>
-  <button id="archiveButton" class="nav-button">✅ 完了したこと</button>
-  <button id="freeboardButton" class="nav-button">🗒 自由帳</button>
-  <button id="memoButton" class="nav-button">📝 メモ</button>
-  <button id="milestoneButton" class="nav-button">📊 目標ビルダー</button>
-  <button id="achievedGoalsButton" class="nav-button">🏆 達成した目標</button>
-  <div class="sidebar-divider"></div>
-  <p class="sidebar-label">ボード</p>
-  <nav id="boardList" class="board-list"></nav>
-</aside>
 
-<main class="main-content">
-  <section id="todayView" class="view hidden">
-    <header class="page-header"><div><p class="eyebrow">TODAY</p><h2>今日やること</h2></div></header>
-    <div id="todayList" class="today-list"></div>
+  <div id="dopaScatterLayer" class="dopa-scatter-layer" aria-hidden="true"></div>
 
-    <section class="panel calendar-panel">
-      <div class="calendar-toolbar">
-        <button id="calendarPrevButton" class="secondary-button">←</button>
-        <h3 id="calendarMonthLabel"></h3>
-        <button id="calendarTodayButton" class="secondary-button">今月</button>
-        <button id="calendarNextButton" class="secondary-button">→</button>
+  <button id="mobileMenuButton" class="mobile-menu-button" aria-label="メニュー">☰</button>
+
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand-row">
+        <div>
+          <h1>タスク管理ンナー</h1>
+          <p id="brandSubtitle">やること整理ンワー</p>
+        </div>
+        <button id="settingsButton" class="icon-button" aria-label="設定">⚙</button>
       </div>
-      <div class="calendar-weekdays">
-        <span>日</span><span>月</span><span>火</span><span>水</span><span>木</span><span>金</span><span>土</span>
+
+      <div id="sidebarEditHint" class="sidebar-edit-hint hidden">↕ タブ編集モード：ドラッグで順番変更</div>
+
+      <nav id="mainNav" class="main-nav">
+        <button id="todayTasksButton" class="nav-button" data-nav-key="todayTasks">☀ 今日やること</button>
+        <button id="routineButton" class="nav-button" data-nav-key="routine">🔁 ルーティンタスク</button>
+        <button id="calendarButton" class="nav-button" data-nav-key="calendar">📅 カレンダー</button>
+        <button id="homeButton" class="nav-button" data-nav-key="home">🏠 ホーム</button>
+        <button id="shortcutsButton" class="nav-button" data-nav-key="shortcuts">⭐ よく使う</button>
+        <button id="archiveButton" class="nav-button" data-nav-key="archive">✅ 完了したこと</button>
+        <button id="templatesButton" class="nav-button" data-nav-key="templates">🧩 テンプレート</button>
+        <button id="freeboardButton" class="nav-button" data-nav-key="freeboard">🗒 自由帳</button>
+        <button id="memoButton" class="nav-button" data-nav-key="memo">📝 メモ</button>
+        <button id="builderButton" class="nav-button" data-nav-key="builder">🧭 目標設計</button>
+        <button id="achievedGoalsButton" class="nav-button" data-nav-key="achievedGoals">🏆 達成した目標</button>
+        <button id="trashButton" class="nav-button" data-nav-key="trash">🗑 ゴミ箱</button>
+      </nav>
+      <details id="hiddenNavDrawer" class="hidden-nav-drawer hidden">
+        <summary>隠したタブ <span id="hiddenNavCount">0</span></summary>
+        <nav id="hiddenNavList" class="hidden-nav-list"></nav>
+      </details>
+
+      <div class="sidebar-divider"></div>
+      <p class="sidebar-label">ボード</p>
+      <div class="sidebar-add-row">
+        <input id="boardNameInput" placeholder="新しいボード名">
+        <button id="addBoardButton" title="追加">＋</button>
       </div>
-      <div id="calendarGrid" class="calendar-grid"></div>
-      <div id="calendarDayDetail" class="calendar-day-detail"></div>
-    </section>
-  </section>
+      <nav id="boardList" class="board-list"></nav>
+    </aside>
 
-  <section id="homeView" class="view hidden">
-    <header class="page-header"><div><p class="eyebrow">DASHBOARD</p><h2>ホーム</h2></div></header>
-    <div class="summary-grid">
-      <article class="summary-card"><span>未完了</span><strong id="openTaskCount">0</strong></article>
-      <article class="summary-card"><span>今日</span><strong id="todayTaskCount">0</strong></article>
-      <article class="summary-card"><span>期限切れ</span><strong id="overdueCount">0</strong></article>
-      <article class="summary-card"><span>今月完了</span><strong id="monthlyDoneCount">0</strong></article>
-    </div>
-    <section class="panel"><h3>期限が近いタスク</h3><div id="upcomingList" class="list-stack"></div></section>
-  </section>
+    <main class="main-content">
+      <section id="todayTasksView" class="view hidden">
+        <header class="page-header">
+          <div><p id="todayEyebrow" class="eyebrow">TODAY</p><h2>今日やること</h2><p id="todayHelper" class="page-helper">今日のタスクを確認。</p></div>
+        </header>
+        <section class="panel today-progress-panel">
+          <div class="progress-ring-wrap">
+            <div id="todayProgressRing" class="progress-ring" style="--progress:0"><span id="todayProgressPercent">0%</span></div>
+            <div><strong id="todayProgressText">0 / 0 完了</strong><p>今日の進捗</p></div>
+          </div>
+        </section>
+        <div id="todayTaskList" class="today-list"></div>
+      </section>
 
-  <section id="boardView" class="view">
-    <header class="page-header board-header">
-      <div><p class="eyebrow">CURRENT BOARD</p><h2 id="currentBoardTitle" contenteditable="true">ボード名</h2></div>
-      <div class="header-actions">
-        <button id="addSectionButton" class="secondary-button">＋ 小項目</button>
-        <button id="addCardButton" class="primary-button">＋ カード</button>
-        <button id="completeSelectedButton" class="success-button hidden">選択したタスクを完了</button>
-        <button id="deleteBoardButton" class="danger-outline-button">削除</button>
-      </div>
-    </header>
 
-    <div class="toolbar">
-      <input id="searchInput" type="search" placeholder="カードを検索">
-      <select id="tagFilter"><option value="">すべてのタグ</option></select>
-      <select id="statusFilter">
-        <option value="all">すべて</option>
-        <option value="open">未選択</option>
-        <option value="selected">選択中</option>
-        <option value="overdue">期限切れ</option>
-      </select>
-      <select id="sortSelect">
-        <option value="manual">手動順</option>
-        <option value="dueAsc">期限が近い順</option>
-        <option value="dueDesc">期限が遠い順</option>
-        <option value="createdDesc">新しい順</option>
-        <option value="createdAsc">古い順</option>
-      </select>
-    </div>
 
-    <div id="selectionBar" class="selection-bar hidden">
-      <span id="selectionCountText">0件選択中</span>
-      <button id="clearSelectionButton" class="secondary-button">選択解除</button>
-      <button id="completeSelectedBarButton" class="success-button">完了にする</button>
-    </div>
-    <div id="sectionBoard" class="section-board"></div>
-  </section>
+      <section id="routineView" class="view hidden">
+        <header class="page-header">
+          <div><p class="eyebrow">ROUTINE</p><h2>ルーティンタスク</h2><p id="routineHelp" class="page-helper">毎日・平日・曜日指定の習慣的なタスクの管理。</p></div>
+        </header>
+        <div class="routine-summary-grid">
+          <article class="summary-card"><span>今日の対象</span><strong id="routineTodayCount">0</strong></article>
+          <article class="summary-card"><span>今日の完了</span><strong id="routineDoneCount">0</strong></article>
+          <article class="summary-card"><span>今日達成率</span><strong id="routineProgressPercent">0%</strong></article>
+          <article class="summary-card"><span>最長連続</span><strong id="routineStreakMax">0日</strong></article>
+        </div>
+        <section class="panel routine-form-panel">
+          <div class="panel-heading"><h3>＋ ルーティンタスク追加</h3><span class="count-badge">毎日の習慣をここで増やす</span></div>
+          <div class="routine-form-grid">
+            <input id="routineTitleInput" type="text" placeholder="例：IT勉強 10分">
+            <select id="routineRuleInput">
+              <option value="daily">毎日</option>
+              <option value="weekdays">平日</option>
+              <option value="custom">曜日指定</option>
+            </select>
+            <select id="routineSlotInput">
+              <option value="morning">朝</option>
+              <option value="day">昼</option>
+              <option value="night">夜</option>
+              <option value="any">いつでも</option>
+            </select>
+            <button id="addRoutineButton" class="primary-button">追加</button>
+          </div>
+          <div id="routineWeekdaysWrap" class="weekday-picker hidden">
+            <label><input class="routine-weekday-input" type="checkbox" value="0">日</label>
+            <label><input class="routine-weekday-input" type="checkbox" value="1">月</label>
+            <label><input class="routine-weekday-input" type="checkbox" value="2">火</label>
+            <label><input class="routine-weekday-input" type="checkbox" value="3">水</label>
+            <label><input class="routine-weekday-input" type="checkbox" value="4">木</label>
+            <label><input class="routine-weekday-input" type="checkbox" value="5">金</label>
+            <label><input class="routine-weekday-input" type="checkbox" value="6">土</label>
+          </div>
+        </section>
+        <section class="panel routine-calendar-panel">
+          <div class="panel-heading routine-calendar-heading">
+            <div><h3>📅 実績カレンダー</h3><p class="routine-calendar-note">ルーティンタスクを選ぶと、できた日を月ごとに確認できます。</p></div>
+            <select id="routineCalendarSelect" aria-label="ルーティンタスクを選択"></select>
+          </div>
+          <div class="calendar-controls routine-calendar-controls">
+            <button id="routineCalendarPrevButton" class="secondary-button">‹</button>
+            <button id="routineCalendarTodayButton" class="secondary-button">今月</button>
+            <button id="routineCalendarNextButton" class="secondary-button">›</button>
+            <strong id="routineCalendarMonthLabel"></strong>
+          </div>
+          <div class="calendar-weekdays routine-calendar-weekdays"><span>日</span><span>月</span><span>火</span><span>水</span><span>木</span><span>金</span><span>土</span></div>
+          <div id="routineCalendarGrid" class="routine-calendar-grid"></div>
+          <div id="routineCalendarLegend" class="routine-calendar-legend"><span><i class="legend-dot done"></i>できた</span><span><i class="legend-dot target"></i>対象日</span><span><i class="legend-dot off"></i>対象外</span></div>
+        </section>
+        <div id="routineList" class="routine-group-stack"></div>
+      </section>
+      <section id="calendarView" class="view hidden">
+        <header class="page-header">
+          <div><p class="eyebrow">CALENDAR</p><h2>カレンダー</h2><p id="calendarHelper" class="page-helper">期限付きタスクを日付で確認。</p></div>
+        </header>
+        <section class="panel calendar-panel">
+          <div class="calendar-toolbar">
+            <button id="calendarPrevButton" class="secondary-button">←</button>
+            <h3 id="calendarMonthLabel"></h3>
+            <button id="calendarTodayButton" class="secondary-button">今月</button>
+            <button id="calendarNextButton" class="secondary-button">→</button>
+          </div>
+          <div class="calendar-weekdays"><span>日</span><span>月</span><span>火</span><span>水</span><span>木</span><span>金</span><span>土</span></div>
+          <div id="calendarGrid" class="calendar-grid"></div>
+          <div id="calendarDayDetail" class="calendar-day-detail"></div>
+        </section>
+      </section>
 
-  <section id="archiveView" class="view hidden">
-    <header class="page-header"><div><p class="eyebrow">COMPLETED</p><h2>完了したこと</h2></div></header>
-    <div class="toolbar toolbar-archive">
-      <input id="archiveSearchInput" type="search" placeholder="完了したタスクを検索">
-      <select id="archiveBoardFilter"><option value="">すべてのボード</option></select>
-    </div>
-    <div id="archiveList" class="archive-grid"></div>
-  </section>
+      <section id="homeView" class="view hidden">
+        <header class="page-header">
+          <div><p class="eyebrow">DASHBOARD</p><h2>ホーム</h2><p id="homeHelper" class="page-helper">全体の状況と最近触ったものを確認。</p></div>
+        </header>
+        <div class="summary-grid">
+          <article class="summary-card"><span>未完了</span><strong id="openTaskCount">0</strong></article>
+          <article class="summary-card"><span>今日</span><strong id="todayTaskCount">0</strong></article>
+          <article class="summary-card"><span>期限切れ</span><strong id="overdueCount">0</strong></article>
+          <article class="summary-card"><span>今月完了</span><strong id="monthlyDoneCount">0</strong></article>
+        </div>
+        <section class="panel home-progress-panel">
+          <div class="home-progress-head"><div><span>今日の進捗</span><strong id="homeProgressText">0 / 0</strong></div><strong id="homeProgressPercent">0%</strong></div>
+          <div class="linear-progress"><div id="homeProgressFill" class="linear-progress-fill"></div></div>
+        </section>
+        <div class="home-two-column">
+          <section class="panel"><div class="panel-heading"><h3>📌 ピン留め</h3></div><div id="pinnedList" class="list-stack"></div></section>
+          <section class="panel"><div class="panel-heading"><h3>🕘 最近触ったもの</h3><button id="clearRecentButton" class="text-button">履歴を消す</button></div><div id="recentList" class="list-stack"></div></section>
+        </div>
+        <section class="panel"><h3>期限が近いタスク</h3><div id="upcomingList" class="list-stack"></div></section>
+      </section>
 
-  <section id="freeboardView" class="view hidden">
-    <header class="page-header">
-      <div><p class="eyebrow">FREE BOARD</p><h2>自由帳</h2></div>
-      <div class="header-actions">
-        <button id="undoFreeboardButton" class="secondary-button" title="ひとつ戻す">↶ 戻す</button>
-        <button id="redoFreeboardButton" class="secondary-button" title="ひとつ進む">↷ 進む</button>
-        <button id="addFreePageButton" class="secondary-button">＋ ページ</button>
-        <button id="renameFreePageButton" class="secondary-button">ページ名変更</button>
-        <button id="addFreeNoteButton" class="primary-button">＋ 付箋</button>
-        <label class="secondary-button file-label">＋ 画像<input id="freeImageInput" type="file" accept="image/*"></label>
-        <button id="clearFreeboardButton" class="danger-outline-button">全消去</button>
-      </div>
-    </header>
-    <div id="freePageTabs" class="free-page-tabs"></div>
-    <p class="freeboard-help">付箋や画像をドラッグして移動できます。右下をドラッグするとサイズ変更できます。</p>
-    <div id="freeCanvas" class="free-canvas"></div>
-  </section>
 
-  <section id="memoView" class="view hidden">
-    <header class="page-header">
-      <div><p class="eyebrow">MEMO</p><h2>メモ</h2></div>
-      <div class="header-actions">
-        <button id="addQuickMemoButton" class="primary-button">＋ メモ</button>
-      </div>
-    </header>
-    <div class="memo-workspace">
-      <aside id="quickMemoList" class="quick-memo-list"></aside>
-      <section class="quick-memo-editor panel">
-        <input id="quickMemoTitle" class="memo-title-input" placeholder="タイトル">
-        <textarea id="quickMemoContent" class="memo-textarea" placeholder="ここにメモを書く"></textarea>
-        <div class="memo-editor-footer">
-          <span id="quickMemoSavedLabel">自動保存</span>
-          <button id="deleteQuickMemoButton" class="danger-outline-button">このメモを削除</button>
+      <section id="shortcutsView" class="view hidden">
+        <header class="page-header">
+          <div><p class="eyebrow">SHORTCUTS</p><h2>よく使う</h2><p id="shortcutsHelp" class="page-helper">ピン留めしたボード・カード・メモ・目標だけをまとめて開く。</p></div>
+        </header>
+        <div id="shortcutSummary" class="shortcut-summary"></div>
+        <div id="shortcutList" class="shortcut-grid"></div>
+      </section>
+
+      <section id="templatesView" class="view hidden">
+        <header class="page-header">
+          <div><p class="eyebrow">TEMPLATES</p><h2>テンプレート</h2><p id="templatesHelp" class="page-helper">よく使うボード構成やブロックの型を使い回す。</p></div>
+        </header>
+        <div class="template-two-column">
+          <section class="panel">
+            <div class="panel-heading"><h3>📁 ボードテンプレート</h3><span id="boardTemplateCount" class="count-badge">0</span></div>
+            <p class="setting-note">小項目・カード内容・色・タグを保存。使う時は期限を空にして新規ボードとして作成します。</p>
+            <div id="boardTemplateList" class="template-list"></div>
+          </section>
+          <section class="panel">
+            <div class="panel-heading"><h3 id="goalTemplateHeading">🧭 目標テンプレート</h3><span id="goalTemplateCount" class="count-badge">0</span></div>
+            <p class="setting-note">ブロックの並びを型として保存。使用時は全ブロック未破壊で作成します。</p>
+            <div id="goalTemplateList" class="template-list"></div>
+          </section>
         </div>
       </section>
-    </div>
-  </section>
 
-  
-  <section id="milestoneView" class="view hidden">
-    <header class="page-header">
-      <div><p class="eyebrow">GOAL BUILDER</p><h2>目標ビルダー</h2></div>
-      <div class="header-actions">
-        <button id="addGoalButton" class="primary-button">＋ 目標を作る</button>
-      </div>
-    </header>
+      <section id="boardView" class="view">
+        <header class="page-header board-header">
+          <div><p class="eyebrow">CURRENT BOARD</p><h2 id="currentBoardTitle" contenteditable="true">ボード名</h2></div>
+          <div class="header-actions">
+            <button id="pinBoardButton" class="secondary-button">☆ ボードをピン</button>
+            <button id="saveBoardTemplateButton" class="secondary-button">🧩 型を保存</button>
+            <button id="addSectionButton" class="secondary-button">＋ 小項目</button>
+            <button id="addCardButton" class="primary-button">＋ カード</button>
+            <button id="completeSelectedButton" class="success-button hidden">選択したタスクを完了</button>
+            <button id="deleteBoardButton" class="danger-outline-button">削除</button>
+          </div>
+        </header>
+        <div class="toolbar">
+          <input id="searchInput" type="search" placeholder="カードを検索">
+          <select id="tagFilter"><option value="">すべてのタグ</option></select>
+          <select id="statusFilter"><option value="all">すべて</option><option value="open">未選択</option><option value="selected">選択中</option><option value="overdue">期限切れ</option><option value="pinned">ピン留め</option></select>
+          <select id="sortSelect"><option value="manual">手動順</option><option value="dueAsc">期限が近い順</option><option value="dueDesc">期限が遠い順</option><option value="createdDesc">新しい順</option><option value="createdAsc">古い順</option></select>
+        </div>
+        <div id="selectionBar" class="selection-bar hidden"><span id="selectionCountText">0件選択中</span><button id="clearSelectionButton" class="secondary-button">選択解除</button><button id="completeSelectedBarButton" class="success-button">完了にする</button></div>
+        <div id="sectionBoard" class="section-board"></div>
+      </section>
 
-    <p class="goal-builder-help">
-      ゴールに必要な要件をブロックとして積み上げていくページです。
-    </p>
+      <section id="archiveView" class="view hidden">
+        <header class="page-header"><div><p class="eyebrow">COMPLETED</p><h2>完了したこと</h2><p id="archiveHelper" class="page-helper">日々の小さい完了タスクも振り返れます。</p></div></header>
+        <div class="achievement-summary-grid archive-summary-grid">
+          <article class="summary-card"><span>累計完了</span><strong id="archiveTotalCount">0</strong></article>
+          <article class="summary-card"><span>今月</span><strong id="archiveMonthCount">0</strong></article>
+          <article class="summary-card"><span>今日</span><strong id="archiveTodayCount">0</strong></article>
+          <article class="summary-card"><span>タグ種類</span><strong id="archiveTagCount">0</strong></article>
+        </div>
+        <section class="panel archive-tag-panel">
+          <div class="panel-heading"><h3>🏷 タグ別完了ファイル</h3><button id="clearArchiveTagButton" class="text-button">絞り込み解除</button></div>
+          <div id="archiveTagFiles" class="archive-tag-files"></div>
+        </section>
+        <div class="toolbar archive-toolbar">
+          <input id="archiveSearchInput" type="search" placeholder="完了したタスクを検索">
+          <select id="archiveBoardFilter"><option value="">すべてのボード</option></select>
+          <select id="archiveTagFilter"><option value="">すべてのタグ</option></select>
+          <select id="archivePeriodFilter"><option value="all">全期間</option><option value="today">今日</option><option value="month">今月</option><option value="year">今年</option></select>
+        </div>
+        <div class="archive-result-head"><strong id="archiveResultCount">0件</strong><button id="archiveShowAllButton" class="secondary-button">すべて表示</button></div>
+        <div id="archiveList" class="archive-grid"></div>
+      </section>
 
-    <div id="goalTowerList" class="goal-tower-list"></div>
+      <section id="freeboardView" class="view hidden">
+        <header class="page-header">
+          <div><p class="eyebrow">FREE BOARD</p><h2>自由帳</h2><p id="freeboardHelp" class="page-helper">PCでは自由配置。スマホでは5列のブロック表示になり、タップで編集できます。</p></div>
+          <div class="header-actions">
+            <button id="undoFreeboardButton" class="secondary-button">↶ 戻す</button>
+            <button id="redoFreeboardButton" class="secondary-button">↷ 進む</button>
+            <button id="addFreePageButton" class="secondary-button">＋ ページ</button>
+            <button id="renameFreePageButton" class="secondary-button">ページ名変更</button>
+            <button id="addFreeNoteButton" class="primary-button">＋ 付箋</button>
+            <label class="secondary-button file-label">＋ 画像<input id="freeImageInput" type="file" accept="image/*"></label>
+            <button id="clearFreeboardButton" class="danger-outline-button">全消去</button>
+          </div>
+        </header>
+        <div id="freePageTabs" class="free-page-tabs"></div>
+        <div id="freeCanvas" class="free-canvas"></div>
+      </section>
 
-    <!-- v2 milestone compatibility: old JS references these IDs -->
-    <div class="hidden">
-      <button id="addMilestoneButton"></button>
-      <input id="milestoneNameInput">
-      <input id="milestoneStartInput" type="date">
-      <input id="milestoneEndInput" type="date">
-      <input id="milestoneProgressInput" type="number" value="0">
-      <select id="milestoneStatusInput"><option value="planned">planned</option></select>
-      <div id="ganttHeader"></div>
-      <div id="ganttRows"></div>
-    </div>
-  </section>
+      <section id="memoView" class="view hidden">
+        <header class="page-header"><div><p class="eyebrow">MEMO</p><h2>メモ</h2></div><div class="header-actions"><button id="addQuickMemoButton" class="primary-button">＋ メモ</button></div></header>
+        <div class="memo-workspace">
+          <aside id="quickMemoList" class="quick-memo-list"></aside>
+          <section class="quick-memo-editor panel">
+            <div class="memo-editor-head"><button id="pinQuickMemoButton" class="secondary-button">☆ ピン留め</button></div>
+            <input id="quickMemoTitle" class="memo-title-input" placeholder="タイトル">
+            <textarea id="quickMemoContent" class="memo-textarea" placeholder="ここにメモを書く"></textarea>
+            <div class="memo-editor-footer"><span id="quickMemoSavedLabel">自動保存</span><button id="deleteQuickMemoButton" class="danger-outline-button">このメモを削除</button></div>
+          </section>
+        </div>
+      </section>
 
-  <section id="achievedGoalsView" class="view hidden">
-    <header class="page-header"><div><p class="eyebrow">ACHIEVEMENTS</p><h2>達成した目標</h2></div></header>
-    <div class="achievement-summary-grid">
-      <article class="summary-card"><span>達成した目標</span><strong id="achievedGoalCount">0</strong></article>
-      <article class="summary-card"><span>今月の達成</span><strong id="achievedGoalMonthCount">0</strong></article>
-    </div>
-    <div id="achievedGoalList" class="achieved-goal-list"></div>
-  </section>
+      <section id="builderView" class="view hidden">
+        <header class="page-header"><div><p id="builderEyebrow" class="eyebrow">GOAL DESIGN</p><h2 id="builderPageTitle">目標設計</h2><p id="builderHelp" class="page-helper">目標までの道筋作り。</p></div></header>
+        <div class="builder-shell">
+          <aside class="goal-library panel">
+            <div class="goal-create-row"><input id="goalNameInput" placeholder="新しい目標"><button id="addGoalButton" class="primary-button">＋</button></div>
+            <div id="goalList" class="goal-list"></div>
+          </aside>
+          <section class="builder-stage panel">
+            <div id="builderEmpty" class="builder-empty hidden">左から目標を作るか選んでください。</div>
+            <div id="builderActive">
+              <div class="builder-stage-head">
+                <div><h3 id="builderGoalTitle">目標</h3><p id="builderGoalMeta" class="goal-meta"></p></div>
+                <div class="header-actions"><button id="pinGoalButton" class="secondary-button">☆ ピン留め</button><button id="saveGoalTemplateButton" class="secondary-button">🧩 型を保存</button><button id="editGoalButton" class="secondary-button">目標を編集</button><button id="deleteGoalButton" class="danger-outline-button">削除</button></div>
+              </div>
+              <div class="breaker-progress-area"><div class="breaker-score"><span id="builderProgressLabel">0 / 0 ブロック</span><strong id="builderProgressPercent">0%</strong></div><div class="linear-progress breaker-progress"><div id="builderProgressFill" class="linear-progress-fill"></div></div></div>
+              <div class="block-create-row"><input id="blockTitleInput" placeholder="必要なブロックを追加"><button id="addBlockButton" class="primary-button">＋ ブロック</button></div>
+              <p class="builder-drag-help">ブロックはドラッグで並び替えできます。</p>
+              <div id="builderBlockList" class="builder-block-list"></div>
+              <button id="completeGoalButton" class="goal-complete-button" disabled>🏆 この目標を達成にする</button>
+            </div>
+          </section>
+        </div>
+      </section>
 
-</main>
-</div>
+      <section id="achievedGoalsView" class="view hidden">
+        <header class="page-header"><div><p class="eyebrow">ACHIEVEMENTS</p><h2>達成した目標</h2><p id="achievedHelp" class="page-helper">達成した目標をアチーブメント化。</p></div></header>
+        <div class="achievement-summary-grid"><article class="summary-card"><span>達成した目標</span><strong id="achievedGoalCount">0</strong></article><article class="summary-card"><span>今月の達成</span><strong id="achievedGoalMonthCount">0</strong></article></div>
+        <div id="achievedGoalList" class="achieved-goal-list"></div>
+      </section>
 
-<div id="cardModal" class="modal hidden">
-  <div class="modal-backdrop" data-close="cardModal"></div>
-  <div class="modal-card">
+      <section id="trashView" class="view hidden">
+        <header class="page-header">
+          <div><p class="eyebrow">TRASH</p><h2>ゴミ箱</h2><p id="trashHelp" class="page-helper">消したものを一旦ここへ。必要なら戻せます。</p></div>
+          <div class="header-actions"><button id="emptyTrashButton" class="danger-outline-button">ゴミ箱を空にする</button></div>
+        </header>
+        <div class="toolbar"><select id="trashKindFilter"><option value="">すべて</option><option value="card">カード</option><option value="board">ボード</option><option value="memo">メモ</option><option value="routine">ルーティンタスク</option><option value="freeItem">自由帳</option><option value="goal">目標</option><option value="archive">完了記録</option><option value="achievedGoal">達成目標</option></select></div>
+        <div id="trashList" class="trash-list"></div>
+      </section>
+    </main>
+  </div>
+
+  <button id="quickAddFab" class="quick-add-fab" aria-label="クイック追加">＋</button>
+  <div id="quickAddMenu" class="quick-add-menu hidden"><button data-quick-action="task">✅ タスク</button><button data-quick-action="routine">🔁 ルーティンタスク</button><button data-quick-action="memo">📝 メモ</button><button data-quick-action="free">🗒 付箋</button><button data-quick-action="goal">🧱 目標</button><button data-quick-action="template">🧩 テンプレート</button></div>
+
+  <div id="cardModal" class="modal hidden"><div class="modal-backdrop" data-close="cardModal"></div><div class="modal-card">
     <div class="modal-header"><h2 id="cardModalTitle">カードを追加</h2><button class="close-button" data-close="cardModal">×</button></div>
     <div class="form-grid">
       <label>種類<select id="cardTypeInput"><option value="task">タスク</option><option value="memo">メモ</option><option value="idea">アイデア</option><option value="link">リンク</option><option value="image">画像</option></select></label>
+      <label>ボード<select id="cardBoardInput"></select></label>
       <label>小項目<select id="cardSectionInput"></select></label>
+      <label>ピン留め<select id="cardPinnedInput"><option value="false">しない</option><option value="true">する</option></select></label>
       <label class="full">タイトル<input id="cardTitleInput" placeholder="カードのタイトル"></label>
       <label class="full">内容<textarea id="cardContentInput" placeholder="メモや詳細"></textarea></label>
-      <label>期限<input id="cardDueInput" type="date"></label>
+      <label>着手可能日<input id="cardStartInput" type="date"></label>
+        <label>期限<input id="cardDueInput" type="date"></label>
       <label>タグ<input id="cardTagsInput" placeholder="就活, 重要, 今日"></label>
       <label>色<select id="cardColorInput"><option value="yellow">黄色</option><option value="blue">青</option><option value="green">緑</option><option value="pink">ピンク</option><option value="purple">紫</option><option value="orange">オレンジ</option><option value="white">白</option></select></label>
       <label>画像<input id="cardImageInput" type="file" accept="image/*"></label>
       <label class="full">リンク<input id="cardLinkInput" type="url" placeholder="https://..."></label>
       <label>繰り返し<select id="repeatTypeInput"><option value="none">なし</option><option value="daily">毎日</option><option value="weekly">毎週</option><option value="monthly">毎月</option><option value="weekdays">曜日指定</option></select></label>
       <label id="repeatIntervalWrap">間隔<input id="repeatIntervalInput" type="number" min="1" value="1"></label>
-      <div id="weekdayPickerWrap" class="full weekday-picker hidden">
-        <span>曜日</span>
-        <label><input type="checkbox" value="0" class="weekday-input">日</label>
-        <label><input type="checkbox" value="1" class="weekday-input">月</label>
-        <label><input type="checkbox" value="2" class="weekday-input">火</label>
-        <label><input type="checkbox" value="3" class="weekday-input">水</label>
-        <label><input type="checkbox" value="4" class="weekday-input">木</label>
-        <label><input type="checkbox" value="5" class="weekday-input">金</label>
-        <label><input type="checkbox" value="6" class="weekday-input">土</label>
-      </div>
+      <div id="weekdayPickerWrap" class="full weekday-picker hidden"><span>曜日</span><label><input type="checkbox" value="0" class="weekday-input">日</label><label><input type="checkbox" value="1" class="weekday-input">月</label><label><input type="checkbox" value="2" class="weekday-input">火</label><label><input type="checkbox" value="3" class="weekday-input">水</label><label><input type="checkbox" value="4" class="weekday-input">木</label><label><input type="checkbox" value="5" class="weekday-input">金</label><label><input type="checkbox" value="6" class="weekday-input">土</label></div>
     </div>
     <div id="imagePreviewWrap" class="image-preview-wrap hidden"><img id="imagePreview" alt="画像プレビュー"><button id="removeImageButton" class="danger-outline-button">画像を外す</button></div>
     <div class="modal-actions"><button class="secondary-button" data-close="cardModal">キャンセル</button><button id="saveCardButton" class="primary-button">保存</button></div>
-  </div>
-</div>
+  </div></div>
 
-<div id="settingsModal" class="modal hidden">
-  <div class="modal-backdrop" data-close="settingsModal"></div>
-  <div class="modal-card small-modal">
-    <div class="modal-header"><h2>表示設定</h2><button class="close-button" data-close="settingsModal">×</button></div>
-    <label>テーマ<select id="themeSelect"><option value="normal">Normal</option><option value="cork">Cork</option><option value="dopaboy">DOPA-BOY</option></select></label>
-    <label>アクセント色<input id="accentColorInput" type="color" value="#2563eb"></label>
-    <label>カード密度<select id="densitySelect"><option value="normal">標準</option><option value="compact">コンパクト</option><option value="large">ゆったり</option></select></label>
-    <div class="modal-actions">
-      <button id="installAppButton" class="primary-button hidden">アプリとして追加</button>
-      <button id="exportButton" class="secondary-button">バックアップ保存</button>
-      <label class="secondary-button file-label">読み込み<input id="importInput" type="file" accept=".json,application/json"></label>
-      <button class="primary-button" data-close="settingsModal">閉じる</button>
+  <div id="quickTaskModal" class="modal hidden"><div class="modal-backdrop" data-close="quickTaskModal"></div><div class="modal-card small-modal">
+    <div class="modal-header"><h2>クイック追加</h2><button class="close-button" data-close="quickTaskModal">×</button></div>
+    <label>タスク名<input id="quickTaskTitle" placeholder="やること"></label><label>ボード<select id="quickTaskBoard"></select></label><label>小項目<select id="quickTaskSection"></select></label><label>着手可能日<input id="quickTaskStart" type="date"></label>
+      <label>期限<input id="quickTaskDue" type="date"></label>
+    <div class="modal-actions"><button class="secondary-button" data-close="quickTaskModal">キャンセル</button><button id="saveQuickTaskButton" class="primary-button">追加</button></div>
+  </div></div>
+
+  <div id="freeItemModal" class="modal hidden"><div class="modal-backdrop" data-close="freeItemModal"></div><div class="modal-card small-modal">
+    <div class="modal-header"><h2 id="freeItemModalTitle">自由帳</h2><button class="close-button" data-close="freeItemModal">×</button></div>
+    <textarea id="freeItemTextInput" class="free-item-mobile-text"></textarea><img id="freeItemImagePreview" class="free-item-mobile-image hidden" alt="自由帳画像">
+    <div class="modal-actions"><button id="deleteFreeItemModalButton" class="danger-outline-button">削除</button><button id="saveFreeItemModalButton" class="primary-button">保存</button></div>
+  </div></div>
+
+
+  <div id="routineModal" class="modal hidden"><div class="modal-backdrop" data-close="routineModal"></div><div class="modal-card routine-modal-card">
+    <div class="modal-header"><h2>ルーティンタスク編集</h2><button class="close-button" data-close="routineModal">×</button></div>
+    <div class="form-grid routine-modal-grid">
+      <label class="span-2">名前<input id="routineModalTitleInput" type="text" placeholder="ルーティンタスク名"></label>
+      <label>繰り返し<select id="routineModalRuleInput"><option value="daily">毎日</option><option value="weekdays">平日</option><option value="custom">曜日指定</option></select></label>
+      <label>時間帯<select id="routineModalSlotInput"><option value="morning">朝</option><option value="day">昼</option><option value="night">夜</option><option value="any">いつでも</option></select></label>
+      <div id="routineModalWeekdaysWrap" class="weekday-picker span-2 hidden">
+        <label><input class="routine-modal-weekday-input" type="checkbox" value="0">日</label><label><input class="routine-modal-weekday-input" type="checkbox" value="1">月</label><label><input class="routine-modal-weekday-input" type="checkbox" value="2">火</label><label><input class="routine-modal-weekday-input" type="checkbox" value="3">水</label><label><input class="routine-modal-weekday-input" type="checkbox" value="4">木</label><label><input class="routine-modal-weekday-input" type="checkbox" value="5">金</label><label><input class="routine-modal-weekday-input" type="checkbox" value="6">土</label>
+      </div>
+      <label>ピン留め<select id="routineModalPinnedInput"><option value="false">しない</option><option value="true">する</option></select></label>
+      <label>状態<select id="routineModalPausedInput"><option value="false">有効</option><option value="true">休止</option></select></label>
     </div>
-  </div>
-</div>
+    <div class="modal-actions routine-modal-actions"><button id="deleteRoutineModalButton" class="danger-outline-button">ゴミ箱へ</button><span class="modal-spacer"></span><button class="secondary-button" data-close="routineModal">キャンセル</button><button id="saveRoutineModalButton" class="primary-button">保存</button></div>
+  </div></div>
 
-<script src="script.js"></script>
-<script>
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => navigator.serviceWorker.register("./service-worker.js"));
-}
-</script>
+  <div id="settingsModal" class="modal hidden"><div class="modal-backdrop" data-close="settingsModal"></div><div class="modal-card settings-modal-card">
+    <div class="modal-header"><h2>設定</h2><button class="close-button" data-close="settingsModal">×</button></div>
+    <div class="settings-grid">
+      <section class="settings-section"><h3>見た目</h3>
+        <label>テーマ<select id="themeSelect"><option value="simple">Simple</option><option value="black">Black</option><option value="dopaboy">DOPA-BOY</option></select></label>
+        <div class="color-setting">
+          <span class="settings-field-label">アクセント色</span>
+          <div id="accentPalette" class="color-palette"><button type="button" class="color-swatch" data-color="#ff2b7f" style="--swatch:#ff2b7f" aria-label="PINK"></button><button type="button" class="color-swatch" data-color="#00d0ff" style="--swatch:#00d0ff" aria-label="CYAN"></button><button type="button" class="color-swatch" data-color="#b8d900" style="--swatch:#b8d900" aria-label="LIME"></button><button type="button" class="color-swatch" data-color="#ff7a00" style="--swatch:#ff7a00" aria-label="ORANGE"></button><button type="button" class="color-swatch" data-color="#8f39e5" style="--swatch:#8f39e5" aria-label="PURPLE"></button><button type="button" class="color-swatch" data-color="#ffe857" style="--swatch:#ffe857" aria-label="YELLOW"></button><button type="button" class="color-swatch" data-color="#4f7cff" style="--swatch:#4f7cff" aria-label="BLUE"></button><button type="button" class="color-swatch" data-color="#ff3b5c" style="--swatch:#ff3b5c" aria-label="RED"></button><button type="button" class="color-swatch" data-color="#21e6c1" style="--swatch:#21e6c1" aria-label="MINT"></button><button type="button" class="color-swatch" data-color="#ff00c8" style="--swatch:#ff00c8" aria-label="MAGENTA"></button></div>
+          <label class="custom-color-row"><span>自由色</span><input id="accentColorInput" type="color" value="#2563eb"></label>
+        </div>
+        <div class="color-setting">
+          <span class="settings-field-label">タグ色</span>
+          <div id="tagPalette" class="color-palette"><button type="button" class="color-swatch" data-color="#ff2b7f" style="--swatch:#ff2b7f" aria-label="PINK"></button><button type="button" class="color-swatch" data-color="#00d0ff" style="--swatch:#00d0ff" aria-label="CYAN"></button><button type="button" class="color-swatch" data-color="#b8d900" style="--swatch:#b8d900" aria-label="LIME"></button><button type="button" class="color-swatch" data-color="#ff7a00" style="--swatch:#ff7a00" aria-label="ORANGE"></button><button type="button" class="color-swatch" data-color="#8f39e5" style="--swatch:#8f39e5" aria-label="PURPLE"></button><button type="button" class="color-swatch" data-color="#ffe857" style="--swatch:#ffe857" aria-label="YELLOW"></button><button type="button" class="color-swatch" data-color="#4f7cff" style="--swatch:#4f7cff" aria-label="BLUE"></button><button type="button" class="color-swatch" data-color="#ff3b5c" style="--swatch:#ff3b5c" aria-label="RED"></button><button type="button" class="color-swatch" data-color="#21e6c1" style="--swatch:#21e6c1" aria-label="MINT"></button><button type="button" class="color-swatch" data-color="#ff00c8" style="--swatch:#ff00c8" aria-label="MAGENTA"></button></div>
+          <label class="custom-color-row"><span>自由色</span><input id="tagColorInput" type="color" value="#8f39e5"></label>
+        </div>
+        <label>カード密度<select id="densitySelect"><option value="normal">標準</option><option value="compact">コンパクト</option><option value="large">ゆったり</option></select></label>
+        <label>文字サイズ<select id="fontSizeSelect"><option value="small">小</option><option value="medium" selected>中</option><option value="large">大</option></select></label>
+        <label class="switch-row"><span>DOPAの動きを許可</span><input id="dopaMotionToggle" type="checkbox" checked></label>
+      </section>
+      <section class="settings-section"><h3>タブ</h3>
+        <label>タブ位置<select id="navPositionSelect"><option value="left">左</option><option value="right">右</option><option value="top">上</option><option value="bottom">下</option></select></label>
+        <p class="setting-note">PC版の配置。デフォルトは左。上・下では横向きのドックになります。スマホは操作性優先で従来の左ドロワー表示です。</p>
+        <label class="switch-row"><span>クイック＋ボタンを表示</span><input id="quickAddVisibleToggle" type="checkbox" checked></label>
+        <label>＋ボタン位置<select id="quickAddPositionSelect"><option value="auto">自動</option><option value="bottom-right">右下</option><option value="bottom-left">左下</option><option value="top-right">右上</option><option value="top-left">左上</option></select></label>
+        <p class="setting-note">自動：左→右下 / 右→左下 / 上→右下 / 下→右上。非表示にしても各画面の追加ボタンは使えます。</p>
+        <label class="switch-row"><span>タブ編集モード</span><input id="sidebarEditToggle" type="checkbox"></label>
+        <p class="setting-note">ONにするとタブをドラッグして並び替えできます。</p>
+        <div class="nav-visibility-box"><strong>常表示するタブ</strong><p class="setting-note">OFFにした項目はナビ内の「隠したタブ」に収納されます。</p><div id="navVisibilityList" class="nav-visibility-list"></div></div>
+        <div class="settings-buttons"><button id="resetNavOrderButton" class="secondary-button">タブ順を初期化</button><button id="resetNavVisibilityButton" class="secondary-button">全部表示</button></div>
+      </section>
+      <section class="settings-section"><h3>保存</h3>
+        <div class="storage-meter"><div class="storage-meter-head"><span>管理ンナーの保存サイズ</span><strong id="storageUsageLabel">計算中</strong></div><div class="linear-progress"><div id="storageUsageFill" class="linear-progress-fill"></div></div></div>
+        <p class="setting-note">ゴミ箱は自動削除せず手動管理。画像が多いほど容量を使います。</p>
+        <div class="settings-buttons"><button id="exportButton" class="secondary-button">バックアップ保存</button><button id="shareBackupButton" class="secondary-button">共有用バックアップ</button><label class="secondary-button file-label">読み込み<input id="importInput" type="file" accept=".json,application/json"></label></div>
+      </section>
+      <section class="settings-section"><h3>アプリ</h3><button id="installAppButton" class="primary-button hidden">アプリとして追加</button><p class="setting-note">PC↔スマホの自動同期はまだ端末内保存のため未実装。共有用バックアップなら画像込みで手動移動できます。</p></section>
+    </div>
+    <div class="modal-actions"><button class="primary-button" data-close="settingsModal">閉じる</button></div>
+  </div></div>
+
+  <div id="dopaFxRoot" aria-hidden="true"></div>
+  <script src="script.js"></script>
+  <script>if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js'));}</script>
 </body>
 </html>
