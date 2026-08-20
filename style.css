@@ -6660,3 +6660,44 @@ body[data-theme="black"] .tag-chip{
     top:calc(max(14px, env(safe-area-inset-top, 0px)) + 26px)!important;
   }
 }
+
+
+/* =========================================================
+   v1.0.5 — mobile menu button state positioning
+   ========================================================= */
+@media(max-width:820px){
+  /* Drawer closed: hamburger stays fixed at screen top-left. */
+  body:not(.mobile-nav-open) .mobile-fixed-controls .mobile-menu-button{
+    left:14px!important;
+    right:auto!important;
+    top:max(14px, env(safe-area-inset-top, 0px))!important;
+  }
+
+  body[data-theme="dopaboy"]:not(.mobile-nav-open) .mobile-fixed-controls .mobile-menu-button{
+    left:14px!important;
+    right:auto!important;
+    top:calc(max(14px, env(safe-area-inset-top, 0px)) + 26px)!important;
+  }
+
+  /* Drawer open: X moves to the right, just outside the drawer. */
+  body.mobile-nav-open .mobile-fixed-controls .mobile-menu-button{
+    left:calc(min(82vw, 310px) + 8px)!important;
+    right:auto!important;
+    top:max(12px, env(safe-area-inset-top, 0px))!important;
+  }
+
+  body[data-theme="dopaboy"].mobile-nav-open .mobile-fixed-controls .mobile-menu-button{
+    left:calc(min(82vw, 310px) + 8px)!important;
+    right:auto!important;
+    top:calc(max(12px, env(safe-area-inset-top, 0px)) + 26px)!important;
+  }
+
+  /* Once open, the title no longer needs to reserve space for the button. */
+  body.mobile-nav-open .sidebar .brand-row{
+    padding-left:0!important;
+  }
+
+  body:not(.mobile-nav-open) .sidebar .brand-row{
+    padding-left:58px!important;
+  }
+}
