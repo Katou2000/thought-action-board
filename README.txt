@@ -84,3 +84,8 @@ v8.9.3を土台に、機能追加は行わず、ファイル構成・PWAキャ�
 [1.0.5 mobile menu button]
 - Closed: fixed hamburger at screen top-left.
 - Open: fixed close button just outside the drawer on the right.
+
+[1.0.6 mobile close controls]
+- Sidebar open: sidebar × is shown to the right of the drawer.
+- Settings open: only the Settings modal × is shown.
+- Closing Settings restores the sidebar ×.

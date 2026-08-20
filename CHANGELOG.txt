@@ -47,3 +47,10 @@ v1.0.5
 - Closing the drawer returns the control to the top-left.
 - DOPA positioning continues to avoid the dedication strip.
 - Updated PWA cache version.
+
+v1.0.6
+- Mobile sidebar close button and Settings modal close button are now treated separately.
+- Opening Settings hides the sidebar × temporarily.
+- Closing Settings restores the sidebar × in its previous right-side position.
+- Settings modal is explicitly layered above mobile navigation controls.
+- Updated PWA cache version.

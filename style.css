@@ -6701,3 +6701,35 @@ body[data-theme="black"] .tag-chip{
     padding-left:58px!important;
   }
 }
+
+
+/* =========================================================
+   v1.0.6 — separate sidebar/settings close controls
+   ========================================================= */
+@media(max-width:820px){
+  /*
+    When Settings is open, only the Settings modal's own × is shown.
+    The sidebar × waits underneath and returns after Settings closes.
+  */
+  body.settings-modal-open .mobile-fixed-controls .mobile-menu-button{
+    opacity:0!important;
+    visibility:hidden!important;
+    pointer-events:none!important;
+  }
+
+  body:not(.settings-modal-open) .mobile-fixed-controls .mobile-menu-button{
+    opacity:1;
+    visibility:visible;
+  }
+
+  /* Settings itself always owns the top layer while open. */
+  body.settings-modal-open #settingsModal{
+    z-index:1200!important;
+  }
+
+  body.settings-modal-open #settingsModal .modal-card,
+  body.settings-modal-open #settingsModal .close-button{
+    position:relative;
+    z-index:1;
+  }
+}
