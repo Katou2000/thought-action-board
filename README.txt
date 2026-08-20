@@ -73,3 +73,10 @@ v8.9.3を土台に、機能追加は行わず、ファイル構成・PWAキャ�
 [1.0.2 visual polish]
 - The floating plus button is intentionally a little smaller so it matches nearby UI text better.
 - Black theme now uses cleaner dark surfaces with much less glow.
+
+[1.0.3 mobile navigation polish]
+- The mobile tab/menu button is fixed like the floating + button.
+- Opening the drawer no longer moves the control.
+
+[1.0.4 mobile fixed control]
+- The hamburger/close button now lives in a dedicated fixed overlay, independent from tab content scrolling.

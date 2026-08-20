@@ -28,3 +28,15 @@ v1.0.2
 - Reduced sidebar add-button + size slightly.
 - Black theme visual cleanup: removed residual glowy text/fx feel and restored a cleaner dark appearance.
 - Updated PWA cache version.
+
+v1.0.3
+- Mobile tab/menu button stays fixed in one screen position whether the sidebar is open or closed.
+- Sidebar brand row reserves space for the fixed menu button.
+- DOPA mode keeps the fixed button below the dedication strip.
+- Updated PWA cache version.
+
+v1.0.4
+- Mobile menu button moved into a dedicated viewport-fixed control layer.
+- The menu button now stays on screen while scrolling any tab/page.
+- DOPA keeps the same fixed behavior while avoiding the dedication strip.
+- Updated PWA cache version.
