@@ -63,3 +63,13 @@ v8.9.3を土台に、機能追加は行わず、ファイル構成・PWAキャ�
 - 自由帳: PC自由配置 / スマホ5列
 - スマホのナビ: 左ドロワー
 - PCのナビ初期位置: 左
+
+[1.0.1 smartphone polish]
+- Sidebar can scroll above Safari's bottom browser bar.
+- Mobile menu button moves outside the open drawer.
+- DOPA action feedback is slower on mobile for readability.
+- Builder mobile rendering is lighter while keeping BLOCK=1 / GOAL=42.
+
+[1.0.2 visual polish]
+- The floating plus button is intentionally a little smaller so it matches nearby UI text better.
+- Black theme now uses cleaner dark surfaces with much less glow.

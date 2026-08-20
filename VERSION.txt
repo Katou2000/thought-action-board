@@ -1,4 +1,3 @@
-Task Kanrinner v1.0
-Release date: 2026-08-20
-Storage key: taskKanrinnerV1
-Schema: 10
+Task Kanrinner
+Version: 1.0.2
+Release: plus-size and black-mode polish

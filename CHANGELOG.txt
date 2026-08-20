@@ -15,3 +15,16 @@ v1.0  (2026-08-20)
 - v8.6-v8.8: DOPA背景、実績カレンダー、モーダル、可読性と文言調整
 - v8.9: ナビを左/右/上/下へ移動可能に
 - v8.9.1-v8.9.3: ＋ボタン配置、横ドック、長いタブ/ボード一覧を調整
+
+v1.0.1
+- iOS/Safari browser-bar-safe mobile sidebar scrolling.
+- Mobile menu/close button no longer overlaps the brand text.
+- DOPA delete/complete/restore feedback remains readable longer.
+- Mobile Builder FX reduces only secondary particles/streaks for smoother animation.
+- BLOCK BREAK remains 1 block; GOAL CLEAR remains 42 blocks.
+
+v1.0.2
+- Reduced floating + icon size for better balance with surrounding UI text.
+- Reduced sidebar add-button + size slightly.
+- Black theme visual cleanup: removed residual glowy text/fx feel and restored a cleaner dark appearance.
+- Updated PWA cache version.
