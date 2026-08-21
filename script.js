@@ -28,16 +28,34 @@ function ensureCurrentData(){
   data.schemaVersion=SCHEMA;
 }
 ensureCurrentData();
-function save(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(data));storageUsage()}catch(e){alert("保存容量がいっぱいの可能性があります。画像やゴミ箱を整理してください。")}}
+function save(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(data));storageUsage()}catch(e){alert("保存容量がいっぱいの可能性があります。画像やゴミ箱を整理してください。");return}window.taskKanrinnerCloudSync?.onLocalSaved()}
+const CLOUD_LOCAL_ROOT_KEYS=["view","selectedBoardId","selectedGoalId","selectedFreePageId","selectedQuickMemoId","selectedRoutineCalendarId","settings","recent"];
+function cloudDataOf(source){
+  const result=clone(source);
+  CLOUD_LOCAL_ROOT_KEYS.forEach(key=>delete result[key]);
+  const stripSelected=value=>{if(Array.isArray(value)){value.forEach(stripSelected);return}if(!value||typeof value!=="object")return;delete value.selected;Object.values(value).forEach(stripSelected)};
+  stripSelected(result);result.schemaVersion=SCHEMA;return result
+}
+function mergeCloudDataWithLocal(remote,local){
+  const merged=cloudDataOf(remote),selectedById=new Map();
+  CLOUD_LOCAL_ROOT_KEYS.forEach(key=>merged[key]=clone(local[key]));
+  const collect=value=>{if(Array.isArray(value)){value.forEach(collect);return}if(!value||typeof value!=="object")return;if(value.id&&typeof value.selected==="boolean")selectedById.set(value.id,value.selected);Object.values(value).forEach(collect)};
+  const restore=value=>{if(Array.isArray(value)){value.forEach(restore);return}if(!value||typeof value!=="object")return;if(value.id&&selectedById.has(value.id))value.selected=selectedById.get(value.id);Object.values(value).forEach(restore)};
+  collect(local);restore(merged);return merged
+}
 window.taskKanrinnerCloudBridge={
   getData(){return clone(data)},
-  replaceData(next){
+  getCloudData(){return cloudDataOf(data)},
+  toCloudData(value){return cloudDataOf(value)},
+  replaceCloudData(next){
     const previous=data;
-    try{data=normalize(clone(next));ensureCurrentData();localStorage.setItem(STORAGE_KEY,JSON.stringify(data))}
+    try{data=normalize(mergeCloudDataWithLocal(next,previous));ensureCurrentData();localStorage.setItem(STORAGE_KEY,JSON.stringify(data))}
     catch(error){data=previous;throw error}
     freeUndo=[];freeRedo=[];storageUsage();renderAll();toggleRoutineRuleUI()
   },
-  downloadLocalBackup(){exportData()}
+  replaceData(next){this.replaceCloudData(next)},
+  downloadLocalBackup(){exportData()},
+  notify(title,detail=""){toast(`${title}|${detail}`)}
 };
 const board=()=>data.boards.find(b=>b.id===data.selectedBoardId)||data.boards[0], freePage=()=>data.freePages.find(p=>p.id===data.selectedFreePageId)||data.freePages[0], memo=()=>data.quickMemos.find(m=>m.id===data.selectedQuickMemoId)||data.quickMemos[0], goal=()=>data.goalTowers.find(g=>g.id===data.selectedGoalId)||null;
 function cards(){return data.boards.flatMap(b=>b.sections.flatMap(s=>s.cards.map(c=>({...c,boardId:b.id,boardName:b.name,sectionId:s.id,sectionName:s.name}))))}

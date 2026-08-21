@@ -1,4 +1,4 @@
-const CACHE_NAME = "task-kanrinner-v1-1-0";
+const CACHE_NAME = "task-kanrinner-v1-1-1";
 const APP_FILES=["./","./index.html","./style.css","./script.js","./cloud-sync.js","./supabase-config.js","./manifest.json","./icon-192.png","./icon-512.png"];
 self.addEventListener("install",e=>{e.waitUntil(caches.open(CACHE_NAME).then(c=>c.addAll(APP_FILES)));self.skipWaiting()});
 self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE_NAME).map(k=>caches.delete(k)))));self.clients.claim()});

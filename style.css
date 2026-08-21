@@ -389,14 +389,19 @@ body[data-theme="dopaboy"] .shortcut-card,body[data-theme="dopaboy"] .template-c
   }
 }
 
-/* Manual Supabase sync */
+/* Supabase sync */
 .cloud-sync-section{grid-column:1/-1}
 .cloud-auth-fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .cloud-auth-fields label{display:flex;flex-direction:column;gap:6px;margin-bottom:12px;color:var(--muted);font-size:12px}
+.cloud-auto-sync-row{margin:12px 0;padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--panel)}
+.cloud-auto-sync-row span,.cloud-auto-sync-row small{display:block}
+.cloud-auto-sync-row small{margin-top:3px;color:var(--muted);font-size:11px;font-weight:400}
 .cloud-sync-summary{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0;padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--panel)}
 .cloud-sync-summary span,.cloud-sync-summary strong{display:block}
 .cloud-sync-summary span{margin-bottom:4px;color:var(--muted);font-size:11px}
 .cloud-sync-summary strong{overflow-wrap:anywhere;font-size:12px}
+.cloud-sync-summary strong[data-tone="success"]{color:var(--success)}
+.cloud-sync-summary strong[data-tone="error"],#cloudDataSizeLabel[data-warning="true"]{color:var(--danger)}
 .cloud-sync-message{min-height:1.5em;margin:10px 0 0;padding:8px 10px;border-radius:8px;background:var(--panel)}
 .cloud-sync-message[data-tone="success"]{color:var(--success);background:color-mix(in srgb,var(--success) 10%,var(--panel))}
 .cloud-sync-message[data-tone="error"]{color:var(--danger);background:color-mix(in srgb,var(--danger) 9%,var(--panel))}

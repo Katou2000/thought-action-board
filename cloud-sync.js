@@ -1,202 +1,109 @@
 "use strict";
 
 (()=>{
-  const META_KEY="taskKanrinnerCloudMetaV1";
-  const config=window.TASK_KANRINNER_SUPABASE_CONFIG||{};
-  const bridge=window.taskKanrinnerCloudBridge;
-  const elements={
-    email:document.getElementById("cloudEmailInput"),
-    password:document.getElementById("cloudPasswordInput"),
-    signUp:document.getElementById("cloudSignUpButton"),
-    login:document.getElementById("cloudLoginButton"),
-    logout:document.getElementById("cloudLogoutButton"),
-    upload:document.getElementById("cloudUploadButton"),
-    download:document.getElementById("cloudDownloadButton"),
-    loginStatus:document.getElementById("cloudLoginStatus"),
-    lastSync:document.getElementById("cloudLastSyncLabel"),
-    message:document.getElementById("cloudSyncMessage")
-  };
+  const META_KEY="taskKanrinnerCloudMetaV1",AUTO_KEY="taskKanrinnerAutoSyncV1";
+  const DEBOUNCE_MS=1800,POLL_MS=45000,REQUEST_TIMEOUT_MS=15000,CHECK_THROTTLE_MS=5000,SIZE_WARNING_BYTES=3*1024*1024;
+  const config=window.TASK_KANRINNER_SUPABASE_CONFIG||{},bridge=window.taskKanrinnerCloudBridge;
+  const elements={email:document.getElementById("cloudEmailInput"),password:document.getElementById("cloudPasswordInput"),signUp:document.getElementById("cloudSignUpButton"),login:document.getElementById("cloudLoginButton"),logout:document.getElementById("cloudLogoutButton"),autoSync:document.getElementById("cloudAutoSyncToggle"),upload:document.getElementById("cloudUploadButton"),download:document.getElementById("cloudDownloadButton"),loginStatus:document.getElementById("cloudLoginStatus"),syncStatus:document.getElementById("cloudSyncStatus"),lastSync:document.getElementById("cloudLastSyncLabel"),revision:document.getElementById("cloudRevisionLabel"),dataSize:document.getElementById("cloudDataSizeLabel"),message:document.getElementById("cloudSyncMessage")};
 
-  let client=null;
-  let currentUser=null;
-  let busy=false;
-  let ready=false;
+  let client=null,currentUser=null,ready=false,manualBusy=false;
+  let autoEnabled=false,knownRevision=null,remoteRevisionSeen=null,remoteExists=null,lastSyncedHash=null,lastSyncedJson=null,localDirty=false,remoteBlocked=false;
+  let uploadTimer=null,uploadRunning=false,uploadQueued=false,downloadRunning=false,checkRunning=false,pendingDownloadRevision=null,pollTimer=null,lastCheckAt=0,activeUserId=null,sessionGeneration=0,notifiedConflictRevision=null;
 
-  function configured(){
-    return typeof config.projectUrl==="string"&&/^https?:\/\//.test(config.projectUrl)&&
-      typeof config.publishableKey==="string"&&config.publishableKey.length>20&&
-      !/YOUR_|ここに|example/i.test(config.projectUrl+config.publishableKey);
+  function configured(){return typeof config.projectUrl==="string"&&/^https?:\/\//.test(config.projectUrl)&&typeof config.publishableKey==="string"&&config.publishableKey.length>20&&!/YOUR_|ここに|example/i.test(config.projectUrl+config.publishableKey)}
+  function stableValue(value){if(Array.isArray(value))return value.map(stableValue);if(!value||typeof value!=="object")return value;return Object.fromEntries(Object.keys(value).sort().map(key=>[key,stableValue(value[key])]))}
+  function stableStringify(value){return JSON.stringify(stableValue(value))}
+  async function digest(text){if(globalThis.crypto?.subtle){const bytes=new TextEncoder().encode(text),hash=await crypto.subtle.digest("SHA-256",bytes);return[...new Uint8Array(hash)].map(x=>x.toString(16).padStart(2,"0")).join("")}let hash=2166136261;for(let i=0;i<text.length;i++){hash^=text.charCodeAt(i);hash=Math.imul(hash,16777619)}return`fnv1a-${(hash>>>0).toString(16)}`}
+  function comparisonValue(value){const result=JSON.parse(JSON.stringify(value));const strip=x=>{if(Array.isArray(x)){x.forEach(strip);return}if(!x||typeof x!=="object")return;delete x.updatedAt;Object.values(x).forEach(strip)};strip(result);return result}
+  async function snapshot(source){const value=source===undefined?bridge.getCloudData():bridge.toCloudData(source),json=stableStringify(value),hash=await digest(stableStringify(comparisonValue(value)));return{data:value,json,hash,bytes:new Blob([json]).size}}
+  function readJson(key,fallback){try{return JSON.parse(localStorage.getItem(key)||"null")??fallback}catch{return fallback}}
+  function writeJson(key,value){try{localStorage.setItem(key,JSON.stringify(value));return true}catch(error){console.warn(`${key} を保存できませんでした。`,error);return false}}
+  function readMeta(){return readJson(META_KEY,null)}
+  function readAutoPreference(userId){const all=readJson(AUTO_KEY,{});return !!(all&&typeof all==="object"&&all[userId])}
+  function writeAutoPreference(userId,enabled){const all=readJson(AUTO_KEY,{});all[userId]=!!enabled;writeJson(AUTO_KEY,all)}
+  function revisionText(value){return value==null?null:String(value)}
+  function compareRevision(a,b){const x=BigInt(a),y=BigInt(b);return x===y?0:x>y?1:-1}
+  function nextRevision(value){return(BigInt(value??0)+1n).toString()}
+  function fmtBytes(bytes){return bytes<1024?`${bytes} B`:bytes<1048576?`${(bytes/1024).toFixed(1)} KB`:`${(bytes/1048576).toFixed(2)} MB`}
+  function syncLabel(direction){return({upload:"手動保存",download:"手動取得","auto-upload":"自動保存","auto-download":"自動取得",verified:"確認"}[direction]||"同期")}
+
+  function renderLastSync(meta=readMeta()){if(!elements.lastSync)return;if(!meta?.syncedAt){elements.lastSync.textContent="未同期";return}const revision=meta.revision==null?"":` / rev ${meta.revision}`;elements.lastSync.textContent=`${new Date(meta.syncedAt).toLocaleString("ja-JP")}（${syncLabel(meta.direction)}${revision}）`}
+  function renderRevision(){if(!elements.revision)return;const local=knownRevision??"未取得";elements.revision.textContent=remoteRevisionSeen!=null&&remoteRevisionSeen!==knownRevision?`${local}（cloud ${remoteRevisionSeen}）`:local}
+  function renderSize(bytes){if(!elements.dataSize)return;elements.dataSize.textContent=`${fmtBytes(bytes)}${bytes>=SIZE_WARNING_BYTES?" ⚠":""}`;elements.dataSize.dataset.warning=bytes>=SIZE_WARNING_BYTES?"true":"false"}
+  function setMessage(message,tone="info"){if(!elements.message)return;elements.message.textContent=message;elements.message.dataset.tone=tone}
+  function setStatus(status,detail,tone="info"){if(elements.syncStatus){elements.syncStatus.textContent=status;elements.syncStatus.dataset.tone=tone}if(detail)setMessage(detail,tone);updateControls()}
+  function setLoginStatus(){if(elements.loginStatus)elements.loginStatus.textContent=currentUser?`ログイン中：${currentUser.email||currentUser.id}`:"未ログイン";if(currentUser?.email&&!elements.email.value)elements.email.value=currentUser.email}
+  function operationBusy(){return manualBusy||uploadRunning||downloadRunning||checkRunning}
+  function updateControls(){const busy=operationBusy(),authDisabled=!ready||busy,hasUser=!!currentUser,syncDisabled=!ready||!hasUser||busy;elements.signUp.disabled=authDisabled;elements.login.disabled=authDisabled;elements.logout.disabled=syncDisabled;elements.autoSync.disabled=syncDisabled;elements.autoSync.checked=hasUser&&autoEnabled;elements.upload.disabled=syncDisabled;elements.download.disabled=syncDisabled;elements.email.disabled=busy;elements.password.disabled=busy;renderRevision()}
+  function requestSignal(){return typeof globalThis.AbortSignal?.timeout==="function"?globalThis.AbortSignal.timeout(REQUEST_TIMEOUT_MS):(()=>{const c=new AbortController();setTimeout(()=>c.abort(),REQUEST_TIMEOUT_MS);return c.signal})()}
+  function errorMessage(error){return error?.message?`エラー：${error.message}`:"処理に失敗しました。"}
+  function networkFailure(error){return navigator.onLine===false||error?.name==="AbortError"||/fetch|network|timeout|abort|failed to fetch/i.test(error?.message||"")}
+  function handleFailure(error,context,{alertUser=false}={}){console.error(error);const offline=networkFailure(error),detail=offline?`${context}できませんでした。ローカル変更は保持され、次回再試行します。`:errorMessage(error);setStatus(offline?"オフライン":"エラー",detail,"error");if(alertUser)alert(detail)}
+
+  function loadUserState(userId){const meta=readMeta(),usable=meta&&(!meta.userId||meta.userId===userId);knownRevision=usable?revisionText(meta.revision):null;remoteRevisionSeen=null;remoteExists=null;lastSyncedHash=usable&&meta.lastSyncedHash?meta.lastSyncedHash:null;lastSyncedJson=null;localDirty=false;remoteBlocked=false;notifiedConflictRevision=null;autoEnabled=readAutoPreference(userId);renderLastSync(usable?meta:null);renderRevision()}
+  function persistBaseline(direction,row,currentSnapshot,{touchTime=true}={}){const old=readMeta(),syncedAt=touchTime?new Date().toISOString():(old?.syncedAt||new Date().toISOString());knownRevision=revisionText(row.revision);remoteRevisionSeen=knownRevision;remoteExists=true;lastSyncedHash=currentSnapshot.hash;lastSyncedJson=currentSnapshot.json;localDirty=false;remoteBlocked=false;notifiedConflictRevision=null;const meta={userId:currentUser.id,direction,syncedAt,remoteUpdatedAt:row.updated_at||null,revision:knownRevision,lastSyncedHash};writeJson(META_KEY,meta);renderLastSync(meta);renderRevision();renderSize(currentSnapshot.bytes)}
+  function persistRemoteBaseline(row,remoteSnapshot){knownRevision=revisionText(row.revision);remoteRevisionSeen=knownRevision;remoteExists=true;lastSyncedHash=remoteSnapshot.hash;lastSyncedJson=null;const old=readMeta(),meta={userId:currentUser.id,direction:old?.direction||"verified",syncedAt:old?.syncedAt||new Date().toISOString(),remoteUpdatedAt:row.updated_at||null,revision:knownRevision,lastSyncedHash};writeJson(META_KEY,meta);renderLastSync(meta);renderRevision()}
+  function clearUploadTimer(){if(uploadTimer){clearTimeout(uploadTimer);uploadTimer=null}}
+  function enterRemoteBlock(remoteRevision,detail,{dirty=localDirty}={}){clearUploadTimer();uploadQueued=false;remoteBlocked=true;localDirty=dirty;remoteRevisionSeen=revisionText(remoteRevision);renderRevision();setStatus("他端末の更新あり",detail,"error");if(notifiedConflictRevision!==remoteRevisionSeen){notifiedConflictRevision=remoteRevisionSeen;bridge.notify("⚠ 他の端末で更新されています","自動上書きを停止しました。設定から取得または手動保存を選んでください。")}}
+  function looksLikeInitialData(value){const empty=x=>!Array.isArray(x)||x.length===0;return value?.boards?.length===1&&value.boards.every(b=>(b.sections||[]).every(s=>empty(s.cards)))&&empty(value.archive)&&empty(value.trash)&&empty(value.goalTowers)&&empty(value.achievedGoals)&&empty(value.routines)&&empty(value.templates)&&(value.freePages||[]).every(p=>empty(p.items))&&(value.quickMemos||[]).every(m=>!m.title&&!m.content)}
+
+  async function refreshDirtyStatus(){if(!bridge)return null;const current=await snapshot();renderSize(current.bytes);localDirty=!lastSyncedHash||current.hash!==lastSyncedHash;if(remoteBlocked)return current;if(localDirty)setStatus("ローカル変更あり",autoEnabled?"変更を安全にクラウドへ送信する準備をしています。":"ローカル変更は端末内に保存されています。自動同期はOFFです。");else setStatus("同期済み",autoEnabled?"ローカルと把握済みクラウドrevisionは一致しています。":"自動同期はOFFです。手動同期は利用できます。","success");return current}
+  function scheduleAfterSave(){clearUploadTimer();if(uploadRunning){uploadQueued=true;return}uploadTimer=setTimeout(()=>{uploadTimer=null;if(autoEnabled)void runAutoUpload();else void refreshDirtyStatus()},DEBOUNCE_MS)}
+  function onLocalSaved(){if(!currentUser)return;localDirty=true;if(!remoteBlocked)setStatus("ローカル変更あり",autoEnabled?"最後の変更から少し待って自動同期します。":"ローカル変更は端末内に保存されています。自動同期はOFFです。");scheduleAfterSave()}
+
+  async function conditionalUpdate(payload,expectedRevision){const revision=nextRevision(expectedRevision),updatedAt=new Date().toISOString();let query=client.from("app_state").update({data:payload,revision,updated_at:updatedAt}).eq("user_id",currentUser.id);query=expectedRevision==null?query.is("revision",null):query.eq("revision",expectedRevision);const{data,error}=await query.select("revision,updated_at").abortSignal(requestSignal()).maybeSingle();if(error)throw error;return data}
+  async function insertFirst(payload){const updatedAt=new Date().toISOString();const{data,error}=await client.from("app_state").insert({user_id:currentUser.id,data:payload,revision:1,updated_at:updatedAt}).select("revision,updated_at").abortSignal(requestSignal()).single();if(error)throw error;return data}
+
+  async function runAutoUpload(){
+    if(!ready||!currentUser||!autoEnabled||remoteBlocked)return;if(uploadRunning){uploadQueued=true;return}uploadRunning=true;updateControls();
+    try{do{uploadQueued=false;const current=await snapshot();renderSize(current.bytes);if(current.hash===lastSyncedHash||current.json===lastSyncedJson){localDirty=false;setStatus("同期済み","同じ内容のためアップロードを省略しました。","success");break}localDirty=true;if(remoteExists===null||(remoteExists&&knownRevision===null))await checkRemoteRevision("upload",{force:true,allowAuto:true});if(remoteBlocked||pendingDownloadRevision!=null||!autoEnabled||!currentUser)break;setStatus("同期中","ローカル変更をクラウドへ保存しています。");let saved;if(remoteExists===false){try{saved=await insertFirst(current.data)}catch(error){if(error?.code==="23505"){enterRemoteBlock(null,"別端末が先にクラウドデータを作成しました。自動保存を停止しました。");break}throw error}}else{if(knownRevision==null){enterRemoteBlock(remoteRevisionSeen,"安全な基準revisionを確認できないため、自動保存を停止しました。");break}saved=await conditionalUpdate(current.data,knownRevision);if(!saved){enterRemoteBlock(remoteRevisionSeen,"他の端末でrevisionが更新されたため、自動保存を停止しました。",{dirty:true});break}}persistBaseline("auto-upload",saved,current);setStatus("同期済み",`自動保存しました（revision ${knownRevision}）。`,"success")}while(uploadQueued&&!remoteBlocked)}catch(error){localDirty=true;handleFailure(error,"自動保存")}finally{uploadRunning=false;updateControls();if(pendingDownloadRevision!=null){const revision=pendingDownloadRevision;pendingDownloadRevision=null;void autoDownload(revision)}else if(uploadQueued&&!remoteBlocked&&autoEnabled)scheduleAfterSave()}
   }
 
-  function readMeta(){
-    try{return JSON.parse(localStorage.getItem(META_KEY)||"null")}catch{return null}
+  async function fetchRemoteRow(expectedRevision=null){let query=client.from("app_state").select("data,revision,updated_at").eq("user_id",currentUser.id);if(expectedRevision!=null)query=query.eq("revision",expectedRevision);const{data,error}=await query.abortSignal(requestSignal()).maybeSingle();if(error)throw error;return data}
+  async function autoDownload(expectedRevision){
+    if(downloadRunning||manualBusy||uploadRunning)return;downloadRunning=true;updateControls();
+    try{const before=await snapshot();renderSize(before.bytes);if(lastSyncedHash&&before.hash!==lastSyncedHash){enterRemoteBlock(expectedRevision,"他端末とこの端末の両方に変更があるため、自動取得を停止しました。",{dirty:true});return}setStatus("同期中","他端末の更新を安全に取得しています。");const remote=await fetchRemoteRow(expectedRevision);if(!remote){enterRemoteBlock(expectedRevision,"確認中にクラウドrevisionが変わりました。もう一度手動で確認してください。",{dirty:false});return}const after=await snapshot();if(after.hash!==before.hash){enterRemoteBlock(expectedRevision,"取得中にローカル変更が発生したため、自動適用を停止しました。",{dirty:true});return}bridge.replaceCloudData(remote.data);const applied=await snapshot();persistBaseline("auto-download",remote,applied);setStatus("同期済み",`他端末の更新を自動取得しました（revision ${knownRevision}）。`,"success");bridge.notify("クラウド更新を反映しました",`revision ${knownRevision}`)}catch(error){handleFailure(error,"自動取得")}finally{downloadRunning=false;updateControls()}
   }
 
-  function writeMeta(direction,row){
-    const meta={direction,syncedAt:new Date().toISOString(),remoteUpdatedAt:row.updated_at||null,revision:row.revision??null};
-    try{localStorage.setItem(META_KEY,JSON.stringify(meta))}catch(error){console.warn("最終同期情報を保存できませんでした。",error)}
-    renderLastSync(meta);
+  async function reconcileUnknownBaseline(remoteHeader,current,allowAuto){
+    const remote=await fetchRemoteRow(remoteHeader.revision);if(!remote){enterRemoteBlock(remoteHeader.revision,"確認中にクラウドrevisionが変わりました。手動で確認してください。");return null}const remoteSnapshot=await snapshot(remote.data),remoteRevision=revisionText(remote.revision),same=current.hash===remoteSnapshot.hash;
+    if(same){persistBaseline("verified",remote,current,{touchTime:false});setStatus("同期済み","ローカルとクラウドの内容が一致しました。","success");return null}
+    if(knownRevision!=null&&compareRevision(remoteRevision,knownRevision)===0){persistRemoteBaseline(remote,remoteSnapshot);localDirty=true;if(allowAuto){setStatus("ローカル変更あり","クラウドは変わっていないため、ローカル変更を自動保存します。");return"upload"}setStatus("ローカル変更あり","クラウドは変わっていません。自動同期はOFFです。");return null}
+    if(knownRevision==null&&looksLikeInitialData(current.data)){remoteExists=true;remoteRevisionSeen=remoteRevision;if(allowAuto)return{download:remoteRevision};enterRemoteBlock(remoteRevision,"クラウドにデータがあります。自動同期をONにするか、手動取得してください。",{dirty:false});return null}
+    enterRemoteBlock(remoteRevision,"同期基準を確認できず、ローカルとクラウドの内容が異なります。自動上書きは行いません。",{dirty:true});return null
   }
 
-  function renderLastSync(meta=readMeta()){
-    if(!elements.lastSync)return;
-    if(!meta?.syncedAt){elements.lastSync.textContent="未同期";return}
-    const label=meta.direction==="upload"?"クラウドへ保存":"クラウドから取得";
-    const revision=meta.revision==null?"":` / rev ${meta.revision}`;
-    elements.lastSync.textContent=`${new Date(meta.syncedAt).toLocaleString("ja-JP")}（${label}${revision}）`;
+  async function checkRemoteRevision(trigger,{force=false,allowAuto=autoEnabled}={}){
+    if(!ready||!currentUser||manualBusy||downloadRunning)return;const now=Date.now();if(!force&&now-lastCheckAt<CHECK_THROTTLE_MS)return;if(checkRunning)return;lastCheckAt=now;checkRunning=true;updateControls();let nextAction=null;
+    try{const{data:remote,error}=await client.from("app_state").select("revision,updated_at").eq("user_id",currentUser.id).abortSignal(requestSignal()).maybeSingle();if(error)throw error;const current=await snapshot();renderSize(current.bytes);localDirty=!lastSyncedHash||current.hash!==lastSyncedHash;
+      if(!remote){remoteExists=false;remoteRevisionSeen=null;renderRevision();if(knownRevision!=null){enterRemoteBlock(null,"把握済みのクラウドデータが見つかりません。自動上書きは行いません。",{dirty:localDirty});return}remoteBlocked=false;if(allowAuto&&localDirty)nextAction="upload";else setStatus(localDirty?"ローカル変更あり":"同期済み",allowAuto?"クラウドへの初回保存を準備しています。":"クラウドデータはまだありません。自動同期はOFFです。");return}
+      remoteExists=true;remoteRevisionSeen=revisionText(remote.revision);renderRevision();if(knownRevision==null||!lastSyncedHash){nextAction=await reconcileUnknownBaseline(remote,current,allowAuto);return}
+      const comparison=compareRevision(remoteRevisionSeen,knownRevision);
+      if(comparison===0){remoteBlocked=false;notifiedConflictRevision=null;if(localDirty){if(allowAuto)nextAction="upload";else setStatus("ローカル変更あり","ローカル変更は端末内に保存されています。自動同期はOFFです。") }else setStatus("同期済み",`クラウドrevision ${knownRevision} と一致しています。`,"success")}
+      else if(comparison>0){if(localDirty)enterRemoteBlock(remoteRevisionSeen,"他端末とこの端末の両方に変更があります。自動上書きは行いません。",{dirty:true});else if(allowAuto)nextAction={download:remoteRevisionSeen};else enterRemoteBlock(remoteRevisionSeen,"他端末の更新があります。自動同期はOFFのため、手動取得できます。",{dirty:false})}
+      else enterRemoteBlock(remoteRevisionSeen,"クラウドrevisionが把握済みrevisionより古いため、自動同期を停止しました。",{dirty:localDirty})
+    }catch(error){handleFailure(error,`${trigger}時のrevision確認`)}finally{checkRunning=false;updateControls();if(nextAction==="upload")scheduleAfterSave();else if(nextAction?.download){if(uploadRunning)pendingDownloadRevision=nextAction.download;else void autoDownload(nextAction.download)}}
   }
 
-  function setMessage(message,tone="info"){
-    if(!elements.message)return;
-    elements.message.textContent=message;
-    elements.message.dataset.tone=tone;
-  }
+  async function runManual(task){if(manualBusy||uploadRunning||downloadRunning||checkRunning)return;clearUploadTimer();uploadQueued=false;manualBusy=true;updateControls();try{await task()}catch(error){handleFailure(error,"手動同期",{alertUser:true})}finally{manualBusy=false;updateControls()}}
+  async function manualUpload(){if(!currentUser)return setMessage("先にログインしてください。","error");if(!confirm("現在のローカル実データをクラウドへ明示的に保存します。競合中でもクラウド側の既存データを上書きします。続けますか？"))return;await runManual(async()=>{setStatus("同期中","クラウドへ手動保存しています。");const{data:existing,error}=await client.from("app_state").select("revision").eq("user_id",currentUser.id).abortSignal(requestSignal()).maybeSingle();if(error)throw error;const current=await snapshot();renderSize(current.bytes);let saved;if(existing){saved=await conditionalUpdate(current.data,revisionText(existing.revision));if(!saved){enterRemoteBlock(existing.revision,"保存中に別端末が更新しました。もう一度内容を確認してください。",{dirty:true});return}}else saved=await insertFirst(current.data);persistBaseline("upload",saved,current);setStatus("同期済み",`手動保存しました（revision ${knownRevision}）。`,"success");alert("クラウドへ保存しました。")})}
+  async function manualDownload(){if(!currentUser)return setMessage("先にログインしてください。","error");const makeBackup=confirm("クラウドから取得する前に、現在のローカルデータをJSONバックアップしますか？\n\nOK：バックアップして続ける\nキャンセル：バックアップしない");if(makeBackup)bridge.downloadLocalBackup();else if(!confirm("バックアップを作成せずにクラウドから取得しますか？"))return;await runManual(async()=>{setStatus("同期中","クラウドデータを取得しています。");const remote=await fetchRemoteRow();if(!remote){setStatus("エラー","クラウドに保存済みデータがありません。","error");alert("クラウドに保存済みデータがありません。");return}if(!remote.data||typeof remote.data!=="object"||Array.isArray(remote.data))throw new Error("クラウドデータの形式が正しくありません。ローカルデータは変更していません。");if(!confirm(`クラウドの実データ（revision ${remote.revision}）をこの端末へ適用します。端末固有の画面・設定・選択状態は維持されます。\n自動マージは行いません。本当に続けますか？`)){setStatus(localDirty?"ローカル変更あり":"同期済み","クラウドデータの適用をキャンセルしました。");return}bridge.replaceCloudData(remote.data);const applied=await snapshot();persistBaseline("download",remote,applied);setStatus("同期済み",`手動取得しました（revision ${knownRevision}）。`,"success");alert("クラウドデータをこの端末へ保存しました。")})}
 
-  function setSession(session){
-    currentUser=session?.user||null;
-    if(elements.loginStatus)elements.loginStatus.textContent=currentUser?`ログイン中：${currentUser.email||currentUser.id}`:"未ログイン";
-    if(currentUser?.email&&!elements.email.value)elements.email.value=currentUser.email;
-    updateControls();
-  }
+  function credentials(){const email=elements.email.value.trim(),password=elements.password.value;if(!email||!elements.email.checkValidity())throw new Error("正しいメールアドレスを入力してください。");if(password.length<6)throw new Error("パスワードは6文字以上で入力してください。");return{email,password}}
+  async function signUp(){await runManual(async()=>{const values=credentials();setMessage("新規登録中です…");const{data,error}=await client.auth.signUp(values);if(error)throw error;elements.password.value="";if(data.session){await activateSession(data.session);setMessage("登録してログインしました。自動同期は端末ごとにOFFから開始します。","success");alert("新規登録してログインしました。")}else{setMessage("確認メールを送信しました。メール確認後にログインしてください。","success");alert("確認メールを送信しました。メール確認後にログインしてください。")}});if(currentUser)void checkRemoteRevision("新規登録",{force:true,allowAuto:autoEnabled})}
+  async function login(){await runManual(async()=>{const values=credentials();setMessage("ログイン中です…");const{data,error}=await client.auth.signInWithPassword(values);if(error)throw error;elements.password.value="";await activateSession(data.session);setMessage("ログインしました。クラウドrevisionを確認します。","success")});if(currentUser)void checkRemoteRevision("ログイン",{force:true,allowAuto:autoEnabled})}
+  async function logout(){await runManual(async()=>{setMessage("ログアウト中です…");const{error}=await client.auth.signOut({scope:"local"});if(error)throw error;elements.password.value="";deactivateSession();setMessage("この端末からログアウトしました。ローカルデータは変更されていません。","success")})}
 
-  function updateControls(){
-    const authDisabled=!ready||busy;
-    const syncDisabled=authDisabled||!currentUser;
-    elements.signUp.disabled=authDisabled;
-    elements.login.disabled=authDisabled;
-    elements.logout.disabled=syncDisabled;
-    elements.upload.disabled=syncDisabled;
-    elements.download.disabled=syncDisabled;
-    elements.email.disabled=busy;
-    elements.password.disabled=busy;
-  }
+  function stopPolling(){if(pollTimer){clearInterval(pollTimer);pollTimer=null}}
+  function startPolling(){stopPolling();pollTimer=setInterval(()=>{if(document.visibilityState==="visible")void checkRemoteRevision("定期確認")},POLL_MS)}
+  function deactivateSession(){sessionGeneration++;currentUser=null;activeUserId=null;autoEnabled=false;knownRevision=null;remoteRevisionSeen=null;remoteExists=null;lastSyncedHash=null;lastSyncedJson=null;localDirty=false;remoteBlocked=false;pendingDownloadRevision=null;clearUploadTimer();uploadQueued=false;stopPolling();setLoginStatus();if(elements.syncStatus)elements.syncStatus.textContent="未ログイン";renderRevision();updateControls()}
+  async function activateSession(session){const user=session?.user;if(!user){deactivateSession();setMessage("メールアドレスとパスワードでログインしてください。");return}currentUser=user;setLoginStatus();if(activeUserId===user.id){updateControls();return}activeUserId=user.id;const generation=++sessionGeneration;loadUserState(user.id);setLoginStatus();updateControls();startPolling();setStatus("同期中","起動後のクラウドrevisionを確認しています。");await refreshDirtyStatus();if(generation!==sessionGeneration)return;void checkRemoteRevision("ログイン確認",{force:true,allowAuto:autoEnabled})}
+  async function toggleAutoSync(){if(!currentUser)return;autoEnabled=elements.autoSync.checked;writeAutoPreference(currentUser.id,autoEnabled);clearUploadTimer();uploadQueued=false;if(autoEnabled){remoteBlocked=false;notifiedConflictRevision=null;setStatus("同期中","自動同期を開始する前にクラウドrevisionを確認しています。");await checkRemoteRevision("自動同期ON",{force:true,allowAuto:true})}else{await refreshDirtyStatus();if(remoteBlocked)setStatus("他端末の更新あり","自動同期をOFFにしました。競合は手動保存または手動取得で解決してください。","error");else setMessage(localDirty?"自動同期をOFFにしました。ローカル変更は端末内に保持されています。":"自動同期をOFFにしました。手動同期は引き続き利用できます。") }updateControls()}
 
-  function credentials(){
-    const email=elements.email.value.trim();
-    const password=elements.password.value;
-    if(!email||!elements.email.checkValidity())throw new Error("正しいメールアドレスを入力してください。");
-    if(password.length<6)throw new Error("パスワードは6文字以上で入力してください。");
-    return{email,password}
-  }
+  async function initialize(){renderLastSync();updateControls();if(bridge)void snapshot().then(x=>renderSize(x.bytes));if(!bridge){if(elements.loginStatus)elements.loginStatus.textContent="同期機能の読込エラー";setStatus("エラー","同期ブリッジを読み込めませんでした。","error");return}if(!configured()){if(elements.loginStatus)elements.loginStatus.textContent="Supabase未設定";setStatus("エラー","supabase-config.js にProject URLとPublishable keyを設定してください。","error");return}if(!window.supabase?.createClient){if(elements.loginStatus)elements.loginStatus.textContent="Supabase JS読込エラー";setStatus("エラー","Supabase JS v2を読み込めませんでした。オンラインで再読み込みしてください。","error");return}try{client=window.supabase.createClient(config.projectUrl,config.publishableKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});ready=true;updateControls();client.auth.onAuthStateChange((_event,session)=>queueMicrotask(()=>void activateSession(session)));const{data,error}=await client.auth.getSession();if(error)throw error;await activateSession(data.session)}catch(error){ready=false;updateControls();if(elements.loginStatus)elements.loginStatus.textContent="初期化エラー";handleFailure(error,"Supabase初期化")}}
 
-  function errorMessage(error){
-    return error?.message?`エラー：${error.message}`:"処理に失敗しました。";
-  }
-
-  async function runBusy(task){
-    if(busy)return;
-    busy=true;updateControls();
-    try{await task()}catch(error){console.error(error);setMessage(errorMessage(error),"error");alert(errorMessage(error))}
-    finally{busy=false;updateControls()}
-  }
-
-  async function signUp(){
-    await runBusy(async()=>{
-      const values=credentials();
-      setMessage("新規登録中です…");
-      const{data:result,error}=await client.auth.signUp(values);
-      if(error)throw error;
-      elements.password.value="";
-      if(result.session){setSession(result.session);setMessage("登録してログインしました。同期はボタン操作時のみ実行されます。","success");alert("新規登録してログインしました。")}
-      else{setMessage("確認メールを送信しました。メール確認後にログインしてください。","success");alert("確認メールを送信しました。メール確認後にログインしてください。")}
-    })
-  }
-
-  async function login(){
-    await runBusy(async()=>{
-      const values=credentials();
-      setMessage("ログイン中です…");
-      const{data:result,error}=await client.auth.signInWithPassword(values);
-      if(error)throw error;
-      elements.password.value="";
-      setSession(result.session);
-      setMessage("ログインしました。同期はボタン操作時のみ実行されます。","success");
-    })
-  }
-
-  async function logout(){
-    await runBusy(async()=>{
-      setMessage("ログアウト中です…");
-      const{error}=await client.auth.signOut({scope:"local"});
-      if(error)throw error;
-      elements.password.value="";
-      setSession(null);
-      setMessage("この端末からログアウトしました。ローカルデータは変更されていません。","success");
-    })
-  }
-
-  async function upload(){
-    if(!currentUser)return setMessage("先にログインしてください。","error");
-    if(!confirm("現在のローカルデータ全体をクラウドへ保存します。クラウド側に既存データがある場合は上書きします。続けますか？"))return;
-    await runBusy(async()=>{
-      setMessage("クラウドへ保存中です…");
-      const{data:existing,error:readError}=await client.from("app_state").select("revision").eq("user_id",currentUser.id).maybeSingle();
-      if(readError)throw readError;
-      const payload=bridge.getData();
-      const updatedAt=new Date().toISOString();
-      let saved;
-      if(existing){
-        let nextRevision;
-        try{nextRevision=(BigInt(existing.revision??0)+1n).toString()}catch{throw new Error("クラウドのrevisionが正しくありません。保存を中止しました。")}
-        let query=client.from("app_state").update({data:payload,revision:nextRevision,updated_at:updatedAt}).eq("user_id",currentUser.id);
-        query=existing.revision==null?query.is("revision",null):query.eq("revision",existing.revision);
-        const{data:updated,error:updateError}=await query.select("revision,updated_at").maybeSingle();
-        if(updateError)throw updateError;
-        if(!updated)throw new Error("保存中にクラウド側のデータが更新されました。もう一度内容を確認してから保存してください。");
-        saved=updated;
-      }else{
-        const{data:inserted,error:insertError}=await client.from("app_state").insert({user_id:currentUser.id,data:payload,revision:1,updated_at:updatedAt}).select("revision,updated_at").single();
-        if(insertError)throw insertError;
-        saved=inserted;
-      }
-      writeMeta("upload",saved);
-      setMessage(`クラウドへ保存しました（revision ${saved.revision}）。`,"success");
-      alert("クラウドへ保存しました。")
-    })
-  }
-
-  async function download(){
-    if(!currentUser)return setMessage("先にログインしてください。","error");
-    const makeBackup=confirm("クラウドから取得する前に、現在のローカルデータをJSONバックアップしますか？\n\nOK：バックアップして続ける\nキャンセル：バックアップしない");
-    if(makeBackup)bridge.downloadLocalBackup();
-    else if(!confirm("バックアップを作成せずにクラウドから取得しますか？"))return;
-    await runBusy(async()=>{
-      setMessage("クラウドデータを取得中です…");
-      const{data:remote,error}=await client.from("app_state").select("data,revision,updated_at").eq("user_id",currentUser.id).maybeSingle();
-      if(error)throw error;
-      if(!remote){setMessage("クラウドに保存済みデータがありません。","error");alert("クラウドに保存済みデータがありません。");return}
-      if(!remote.data||typeof remote.data!=="object"||Array.isArray(remote.data))throw new Error("クラウドデータの形式が正しくありません。ローカルデータは変更していません。");
-      const ok=confirm(`クラウドのデータ（revision ${remote.revision}）で、この端末の taskKanrinnerV1 を上書きします。\nこの操作は自動マージされません。本当に続けますか？`);
-      if(!ok){setMessage("クラウドデータの適用をキャンセルしました。ローカルデータは変更していません。");return}
-      bridge.replaceData(remote.data);
-      writeMeta("download",remote);
-      setMessage(`クラウドから取得し、ローカルへ保存しました（revision ${remote.revision}）。`,"success");
-      alert("クラウドデータをこの端末へ保存しました。")
-    })
-  }
-
-  async function initialize(){
-    renderLastSync();
-    updateControls();
-    if(!bridge){if(elements.loginStatus)elements.loginStatus.textContent="同期機能の読込エラー";setMessage("同期ブリッジを読み込めませんでした。","error");return}
-    if(!configured()){if(elements.loginStatus)elements.loginStatus.textContent="Supabase未設定";setMessage("supabase-config.js にProject URLとPublishable keyを設定してください。","error");return}
-    if(!window.supabase?.createClient){if(elements.loginStatus)elements.loginStatus.textContent="Supabase JS読込エラー";setMessage("Supabase JS v2を読み込めませんでした。オンラインで再読み込みしてください。","error");return}
-    try{
-      client=window.supabase.createClient(config.projectUrl,config.publishableKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
-      ready=true;updateControls();
-      const{data:sessionData,error}=await client.auth.getSession();
-      if(error)throw error;
-      setSession(sessionData.session);
-      setMessage(sessionData.session?"ログイン済みです。同期はボタン操作時のみ実行されます。":"メールアドレスとパスワードでログインしてください。");
-      client.auth.onAuthStateChange((_event,session)=>setSession(session));
-    }catch(error){ready=false;updateControls();if(elements.loginStatus)elements.loginStatus.textContent="初期化エラー";setMessage(errorMessage(error),"error");console.error(error)}
-  }
-
-  elements.signUp?.addEventListener("click",signUp);
-  elements.login?.addEventListener("click",login);
-  elements.logout?.addEventListener("click",logout);
-  elements.upload?.addEventListener("click",upload);
-  elements.download?.addEventListener("click",download);
-  elements.password?.addEventListener("keydown",event=>{if(event.key==="Enter"&&!elements.login.disabled)login()});
+  window.taskKanrinnerCloudSync={onLocalSaved,checkNow:()=>checkRemoteRevision("手動確認",{force:true})};
+  elements.signUp?.addEventListener("click",signUp);elements.login?.addEventListener("click",login);elements.logout?.addEventListener("click",logout);elements.autoSync?.addEventListener("change",()=>void toggleAutoSync());elements.upload?.addEventListener("click",manualUpload);elements.download?.addEventListener("click",manualDownload);elements.password?.addEventListener("keydown",event=>{if(event.key==="Enter"&&!elements.login.disabled)login()});
+  document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")void checkRemoteRevision("再表示")});window.addEventListener("focus",()=>void checkRemoteRevision("フォーカス"));window.addEventListener("offline",()=>{if(currentUser)setStatus("オフライン","ローカル保存は継続します。通信復帰後にrevisionを再確認します。","error")});window.addEventListener("online",()=>{if(currentUser)void checkRemoteRevision("オンライン復帰",{force:true})});
   initialize();
 })();

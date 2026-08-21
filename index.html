@@ -422,21 +422,25 @@
         <p class="setting-note">ゴミ箱は自動削除せず手動管理。画像が多いほど容量を使います。</p>
         <div class="settings-buttons"><button id="exportButton" class="secondary-button">バックアップ保存</button><button id="shareBackupButton" class="secondary-button">共有用バックアップ</button><label class="secondary-button file-label">読み込み<input id="importInput" type="file" accept=".json,application/json"></label></div>
       </section>
-      <section class="settings-section cloud-sync-section"><h3>クラウド同期（手動）</h3>
+      <section class="settings-section cloud-sync-section"><h3>クラウド同期</h3>
         <div class="cloud-auth-fields">
           <label>メールアドレス<input id="cloudEmailInput" type="email" inputmode="email" autocomplete="email" placeholder="you@example.com"></label>
           <label>パスワード<input id="cloudPasswordInput" type="password" autocomplete="current-password" placeholder="6文字以上"></label>
         </div>
         <div class="settings-buttons cloud-auth-actions"><button id="cloudSignUpButton" class="secondary-button">新規登録</button><button id="cloudLoginButton" class="primary-button">ログイン</button><button id="cloudLogoutButton" class="secondary-button" disabled>ログアウト</button></div>
+        <label class="switch-row cloud-auto-sync-row"><span><strong>自動同期</strong><small>この端末で明示的にONにした場合だけ動作します</small></span><input id="cloudAutoSyncToggle" type="checkbox" disabled></label>
         <div class="cloud-sync-summary">
           <div><span>現在のログイン状態</span><strong id="cloudLoginStatus" aria-live="polite">初期化中</strong></div>
+          <div><span>同期状態</span><strong id="cloudSyncStatus" aria-live="polite">確認中</strong></div>
           <div><span>最終同期日時</span><strong id="cloudLastSyncLabel">未同期</strong></div>
+          <div><span>revision</span><strong id="cloudRevisionLabel">未取得</strong></div>
+          <div><span>同期データサイズ</span><strong id="cloudDataSizeLabel">計算中</strong></div>
         </div>
-        <div class="settings-buttons"><button id="cloudUploadButton" class="primary-button" disabled>クラウドへ保存</button><button id="cloudDownloadButton" class="secondary-button" disabled>クラウドから取得</button></div>
+        <div class="settings-buttons"><button id="cloudUploadButton" class="primary-button" disabled>手動：クラウドへ保存</button><button id="cloudDownloadButton" class="secondary-button" disabled>手動：クラウドから取得</button></div>
         <p id="cloudSyncMessage" class="cloud-sync-message setting-note" role="status" aria-live="polite">Project URLとPublishable keyを設定すると利用できます。</p>
-        <p class="setting-note">自動同期は行いません。クラウドから取得する前に、現在のローカルデータをJSONバックアップできます。</p>
+        <p class="setting-note">端末固有の画面・選択状態・見た目設定・最近の履歴は同期しません。クラウドから取得する前に、現在のローカルデータをJSONバックアップできます。</p>
       </section>
-      <section class="settings-section"><h3>アプリ</h3><button id="installAppButton" class="primary-button hidden">アプリとして追加</button><p class="setting-note">データの正式な保存先は従来どおり端末内です。PC↔スマホは設定のクラウド同期ボタンで手動転送できます。</p></section>
+      <section class="settings-section"><h3>アプリ</h3><button id="installAppButton" class="primary-button hidden">アプリとして追加</button><p class="setting-note">データの正式な保存先は従来どおり端末内です。自動同期は端末ごとにONにでき、競合時は手動操作で解決します。</p></section>
     </div>
     <div class="modal-actions"><button class="primary-button" data-close="settingsModal">閉じる</button></div>
   </div></div>
