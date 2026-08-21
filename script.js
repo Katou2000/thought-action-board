@@ -29,6 +29,16 @@ function ensureCurrentData(){
 }
 ensureCurrentData();
 function save(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(data));storageUsage()}catch(e){alert("保存容量がいっぱいの可能性があります。画像やゴミ箱を整理してください。")}}
+window.taskKanrinnerCloudBridge={
+  getData(){return clone(data)},
+  replaceData(next){
+    const previous=data;
+    try{data=normalize(clone(next));ensureCurrentData();localStorage.setItem(STORAGE_KEY,JSON.stringify(data))}
+    catch(error){data=previous;throw error}
+    freeUndo=[];freeRedo=[];storageUsage();renderAll();toggleRoutineRuleUI()
+  },
+  downloadLocalBackup(){exportData()}
+};
 const board=()=>data.boards.find(b=>b.id===data.selectedBoardId)||data.boards[0], freePage=()=>data.freePages.find(p=>p.id===data.selectedFreePageId)||data.freePages[0], memo=()=>data.quickMemos.find(m=>m.id===data.selectedQuickMemoId)||data.quickMemos[0], goal=()=>data.goalTowers.find(g=>g.id===data.selectedGoalId)||null;
 function cards(){return data.boards.flatMap(b=>b.sections.flatMap(s=>s.cards.map(c=>({...c,boardId:b.id,boardName:b.name,sectionId:s.id,sectionName:s.name}))))}
 function findCard(id){for(const b of data.boards)for(const s of b.sections){const c=s.cards.find(x=>x.id===id);if(c)return{b,s,c}}return null}

@@ -389,6 +389,20 @@ body[data-theme="dopaboy"] .shortcut-card,body[data-theme="dopaboy"] .template-c
   }
 }
 
+/* Manual Supabase sync */
+.cloud-sync-section{grid-column:1/-1}
+.cloud-auth-fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.cloud-auth-fields label{display:flex;flex-direction:column;gap:6px;margin-bottom:12px;color:var(--muted);font-size:12px}
+.cloud-sync-summary{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0;padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--panel)}
+.cloud-sync-summary span,.cloud-sync-summary strong{display:block}
+.cloud-sync-summary span{margin-bottom:4px;color:var(--muted);font-size:11px}
+.cloud-sync-summary strong{overflow-wrap:anywhere;font-size:12px}
+.cloud-sync-message{min-height:1.5em;margin:10px 0 0;padding:8px 10px;border-radius:8px;background:var(--panel)}
+.cloud-sync-message[data-tone="success"]{color:var(--success);background:color-mix(in srgb,var(--success) 10%,var(--panel))}
+.cloud-sync-message[data-tone="error"]{color:var(--danger);background:color-mix(in srgb,var(--danger) 9%,var(--panel))}
+.settings-buttons button:disabled{cursor:not-allowed;opacity:.45}
+@media(max-width:700px){.cloud-auth-fields,.cloud-sync-summary{grid-template-columns:1fr}}
+
 /* Buttons and labels should not split words on desktop. */
 @media(min-width:701px){
   .nav-button,
