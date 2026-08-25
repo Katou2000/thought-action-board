@@ -52,6 +52,8 @@
         <button id="settingsButton" class="icon-button" aria-label="設定">⚙</button>
       </div>
 
+      <button id="globalSearchButton" class="sidebar-search-button" type="button">🔎 全体検索</button>
+
       <div id="sidebarEditHint" class="sidebar-edit-hint hidden">↕ タブ編集モード：ドラッグで順番変更</div>
 
       <nav id="mainNav" class="main-nav">
@@ -137,8 +139,14 @@
         </section>
         <section class="panel routine-calendar-panel">
           <div class="panel-heading routine-calendar-heading">
-            <div><h3>📅 実績カレンダー</h3><p class="routine-calendar-note">ルーティンタスクを選ぶと、できた日を月ごとに確認できます。</p></div>
+            <div><h3>📅 月間振り返り</h3><p class="routine-calendar-note">その日に対象だった全ルーティンの達成状況を確認できます。過去日は閲覧専用です。</p></div>
             <select id="routineCalendarSelect" aria-label="ルーティンタスクを選択"></select>
+          </div>
+          <div class="routine-reflection-summary">
+            <div><span>今月の達成率</span><strong id="routineMonthlyRate">0%</strong></div>
+            <div><span>完全達成日数</span><strong id="routinePerfectDays">0日</strong></div>
+            <div><span>現在の連続達成</span><strong id="routineCurrentFullStreak">0日</strong></div>
+            <div><span>最長連続達成</span><strong id="routineLongestFullStreak">0日</strong></div>
           </div>
           <div class="calendar-controls routine-calendar-controls">
             <button id="routineCalendarPrevButton" class="secondary-button">‹</button>
@@ -148,7 +156,8 @@
           </div>
           <div class="calendar-weekdays routine-calendar-weekdays"><span>日</span><span>月</span><span>火</span><span>水</span><span>木</span><span>金</span><span>土</span></div>
           <div id="routineCalendarGrid" class="routine-calendar-grid"></div>
-          <div id="routineCalendarLegend" class="routine-calendar-legend"><span><i class="legend-dot done"></i>できた</span><span><i class="legend-dot target"></i>対象日</span><span><i class="legend-dot off"></i>対象外</span></div>
+          <div id="routineCalendarLegend" class="routine-calendar-legend"><span><i class="legend-dot off"></i>対象なし</span><span><i class="legend-dot zero"></i>0件達成</span><span><i class="legend-dot partial"></i>一部達成</span><span><i class="legend-dot done"></i>全達成</span></div>
+          <section id="routineDayDetail" class="routine-day-detail" aria-live="polite"></section>
         </section>
         <div id="routineList" class="routine-group-stack"></div>
       </section>
@@ -229,12 +238,12 @@
             <button id="deleteBoardButton" class="danger-outline-button">削除</button>
           </div>
         </header>
-        <div class="toolbar">
-          <input id="searchInput" type="search" placeholder="カードを検索">
+        <form class="toolbar app-search-form" role="search" aria-label="カード検索" autocomplete="off">
+          <input id="searchInput" name="board_query" type="search" placeholder="カードを検索" autocomplete="off" autocapitalize="none" spellcheck="false">
           <select id="tagFilter"><option value="">すべてのタグ</option></select>
           <select id="statusFilter"><option value="all">すべて</option><option value="open">未選択</option><option value="selected">選択中</option><option value="overdue">期限切れ</option><option value="pinned">ピン留め</option></select>
           <select id="sortSelect"><option value="manual">手動順</option><option value="dueAsc">期限が近い順</option><option value="dueDesc">期限が遠い順</option><option value="createdDesc">新しい順</option><option value="createdAsc">古い順</option></select>
-        </div>
+        </form>
         <div id="selectionBar" class="selection-bar hidden"><span id="selectionCountText">0件選択中</span><button id="clearSelectionButton" class="secondary-button">選択解除</button><button id="completeSelectedBarButton" class="success-button">完了にする</button></div>
         <div id="sectionBoard" class="section-board"></div>
       </section>
@@ -251,12 +260,12 @@
           <div class="panel-heading"><h3>🏷 タグ別完了ファイル</h3><button id="clearArchiveTagButton" class="text-button">絞り込み解除</button></div>
           <div id="archiveTagFiles" class="archive-tag-files"></div>
         </section>
-        <div class="toolbar archive-toolbar">
-          <input id="archiveSearchInput" type="search" placeholder="完了したタスクを検索">
+        <form class="toolbar archive-toolbar app-search-form" role="search" aria-label="完了タスク検索" autocomplete="off">
+          <input id="archiveSearchInput" name="archive_query" type="search" placeholder="完了したタスクを検索" autocomplete="off" autocapitalize="none" spellcheck="false">
           <select id="archiveBoardFilter"><option value="">すべてのボード</option></select>
           <select id="archiveTagFilter"><option value="">すべてのタグ</option></select>
           <select id="archivePeriodFilter"><option value="all">全期間</option><option value="today">今日</option><option value="month">今月</option><option value="year">今年</option></select>
-        </div>
+        </form>
         <div class="archive-result-head"><strong id="archiveResultCount">0件</strong><button id="archiveShowAllButton" class="secondary-button">すべて表示</button></div>
         <div id="archiveList" class="archive-grid"></div>
       </section>
@@ -334,6 +343,36 @@
 
   <button id="quickAddFab" class="quick-add-fab" aria-label="クイック追加">＋</button>
   <div id="quickAddMenu" class="quick-add-menu hidden"><button data-quick-action="task">✅ タスク</button><button data-quick-action="routine">🔁 ルーティンタスク</button><button data-quick-action="memo">📝 メモ</button><button data-quick-action="free">🗒 付箋</button><button data-quick-action="goal">🧱 目標</button><button data-quick-action="template">🧩 テンプレート</button></div>
+
+  <div id="syncCompact" class="sync-compact">
+    <button id="syncCompactButton" class="sync-compact-button" type="button" aria-expanded="false" aria-controls="syncCompactDetail">
+      <span id="syncCompactIcon" aria-hidden="true">☁–</span><span id="syncCompactLabel">未ログイン</span>
+    </button>
+    <section id="syncCompactDetail" class="sync-compact-detail hidden" aria-label="同期の詳細">
+      <div><span>現在の状態</span><strong id="syncCompactStatus">未ログイン</strong></div>
+      <div><span>最終同期日時</span><strong id="syncCompactLastSync">未同期</strong></div>
+      <div><span>revision</span><strong id="syncCompactRevision">未取得</strong></div>
+      <button id="syncCompactSettingsButton" class="text-button" type="button">同期設定を開く</button>
+    </section>
+  </div>
+
+  <div id="undoNotice" class="undo-notice hidden" role="status" aria-live="polite">
+    <span id="undoNoticeText"></span><button id="undoNoticeButton" type="button">元に戻す</button>
+  </div>
+
+  <div id="imageLightbox" class="image-lightbox hidden" role="dialog" aria-modal="true" aria-label="画像プレビュー">
+    <button id="imageLightboxClose" class="image-lightbox-close" type="button" aria-label="画像プレビューを閉じる">×</button>
+    <img id="imageLightboxImage" alt="拡大画像">
+  </div>
+
+  <div id="globalSearchModal" class="modal hidden"><div class="modal-backdrop" data-close="globalSearchModal"></div><div class="modal-card global-search-modal-card">
+    <div class="modal-header"><h2>🔎 全体検索</h2><button class="close-button" data-close="globalSearchModal">×</button></div>
+    <form class="app-search-form global-search-form" role="search" aria-label="アプリ全体検索" autocomplete="off">
+      <input id="globalSearchInput" class="global-search-input" name="workspace_query" type="search" placeholder="ボード、カード、メモ、ルーティン、目標を検索" autocomplete="off" autocapitalize="none" spellcheck="false">
+    </form>
+    <p id="globalSearchSummary" class="global-search-summary">検索語を入力してください。</p>
+    <div id="globalSearchResults" class="global-search-results"></div>
+  </div></div>
 
   <div id="cardModal" class="modal hidden"><div class="modal-backdrop" data-close="cardModal"></div><div class="modal-card">
     <div class="modal-header"><h2 id="cardModalTitle">カードを追加</h2><button class="close-button" data-close="cardModal">×</button></div>
@@ -423,11 +462,13 @@
         <div class="settings-buttons"><button id="exportButton" class="secondary-button">バックアップ保存</button><button id="shareBackupButton" class="secondary-button">共有用バックアップ</button><label class="secondary-button file-label">読み込み<input id="importInput" type="file" accept=".json,application/json"></label></div>
       </section>
       <section class="settings-section cloud-sync-section"><h3>クラウド同期</h3>
-        <div class="cloud-auth-fields">
-          <label>メールアドレス<input id="cloudEmailInput" type="email" inputmode="email" autocomplete="email" placeholder="you@example.com"></label>
-          <label>パスワード<input id="cloudPasswordInput" type="password" autocomplete="current-password" placeholder="6文字以上"></label>
-        </div>
-        <div class="settings-buttons cloud-auth-actions"><button id="cloudSignUpButton" class="secondary-button">新規登録</button><button id="cloudLoginButton" class="primary-button">ログイン</button><button id="cloudLogoutButton" class="secondary-button" disabled>ログアウト</button></div>
+        <form id="cloudAuthForm" class="cloud-auth-form" autocomplete="on">
+          <div class="cloud-auth-fields">
+            <label>メールアドレス<input id="cloudEmailInput" name="task_kanrinner_auth_email" type="email" inputmode="email" autocomplete="email" autocapitalize="none" spellcheck="false" placeholder="you@example.com"></label>
+            <label>パスワード<input id="cloudPasswordInput" name="task_kanrinner_current_password" type="password" autocomplete="current-password" placeholder="6文字以上"></label>
+          </div>
+          <div class="settings-buttons cloud-auth-actions"><button id="cloudSignUpButton" class="secondary-button" type="button">新規登録</button><button id="cloudLoginButton" class="primary-button" type="button">ログイン</button><button id="cloudLogoutButton" class="secondary-button" type="button" disabled>ログアウト</button></div>
+        </form>
         <label class="switch-row cloud-auto-sync-row"><span><strong>自動同期</strong><small>この端末で明示的にONにした場合だけ動作します</small></span><input id="cloudAutoSyncToggle" type="checkbox" disabled></label>
         <div class="cloud-sync-summary">
           <div><span>現在のログイン状態</span><strong id="cloudLoginStatus" aria-live="polite">初期化中</strong></div>
