@@ -9,6 +9,7 @@
   data.settings.tabWidth=["narrow","standard","wide"].includes(data.settings.tabWidth)?data.settings.tabWidth:"standard";
   data.settings.tutorialCompleted=data.settings.tutorialCompleted===true;
   data.settings.dopaTutorialCompleted=data.settings.dopaTutorialCompleted===true;
+  data.settings.goalTutorialCompleted=data.settings.goalTutorialCompleted===true;
   data.settings.navOrder=(data.settings.navOrder||[]).filter(key=>key!=="todayTasks");
   data.settings.navVisible.todayTasks=false;
   if(data.view==="todayTasks")data.view="home";
@@ -20,8 +21,8 @@
   function placeBackButton(){const button=get("appBackButton"),view=E[data.view+"View"];if(view&&button.parentElement!==view)view.insertBefore(button,view.firstChild);button.classList.toggle("hidden",!previousLocation)}
   const baseShow=show,baseShowTransient=showTransient;
   function transition(base,view){const before=activeLocation||captureLocation(),result=base(view==="todayTasks"?"home":view),after=captureLocation();if(!sameLocation(before,after))previousLocation=before;activeLocation=after;placeBackButton();return result}
-  show=function(view){return transition(baseShow,view)};
-  showTransient=function(view){return transition(baseShowTransient,view)};
+  show=function(view){const result=transition(baseShow,view);if(view==="builder")setTimeout(maybeOpenGoalTutorial,80);return result};
+  showTransient=function(view){const result=transition(baseShowTransient,view);if(view==="builder")setTimeout(maybeOpenGoalTutorial,80);return result};
   get("appBackButton").onclick=()=>{if(!previousLocation)return;const target=previousLocation;previousLocation=null;data.selectedBoardId=target.selectedBoardId;data.selectedGoalId=target.selectedGoalId;data.selectedFreePageId=target.selectedFreePageId;data.selectedQuickMemoId=target.selectedQuickMemoId;data.selectedRoutineCalendarId=target.selectedRoutineCalendarId;selectedDate=target.selectedDate;calCursor=new Date(target.calendarCursor);baseShow(target.view==="todayTasks"?"home":target.view);activeLocation=captureLocation();placeBackButton()};
   activeLocation=captureLocation();
 
@@ -100,8 +101,9 @@
 
   const baseRenderCard=renderCard;
   renderCard=function(card,sectionId){
-    const el=baseRenderCard(card,sectionId);el.style.setProperty("--card-user-color",cardColors[card.color]||cardColors.white);
-    if(card.type==="task"){const foot=el.querySelector(".card-footer"),button=document.createElement("button");button.type="button";button.className="schedule-card-button";button.textContent="📅 今やる";button.title="今やることの日付・期間を設定";button.onclick=()=>{openCardModal(card.id);setTimeout(()=>get("cardScheduleMode").focus(),30)};foot?.insertBefore(button,foot.firstChild)}
+    const el=baseRenderCard(card,sectionId),foot=el.querySelector(".card-footer");el.style.setProperty("--card-user-color",cardColors[card.color]||cardColors.white);
+    if(card.type==="task"){const button=document.createElement("button");button.type="button";button.className="schedule-card-button";button.textContent="📅 今やる";button.title="今やることの日付・期間を設定";button.onclick=()=>{openCardModal(card.id);setTimeout(()=>get("cardScheduleMode").focus(),30)};foot?.insertBefore(button,foot.firstChild)}
+    const info=document.createElement("div");info.className="card-info";el.querySelectorAll(":scope > .meta-row, :scope > .tag-row").forEach(row=>info.appendChild(row));el.insertBefore(info,foot);
     return el
   };
 
@@ -130,6 +132,11 @@
   boardSearchClose.onclick=closeBoardSearch;
   E.searchInput.addEventListener("keydown",event=>{if(event.key==="Escape"){event.preventDefault();event.stopPropagation();closeBoardSearch()}});
   boardSearchToggle.closest("form").onsubmit=event=>event.preventDefault();
+  const sidebarSearchPanel=get("sidebarGlobalSearchPanel"),sidebarSearchInput=get("sidebarGlobalSearchInput"),sidebarSearchClose=get("sidebarGlobalSearchClose"),sidebarSearchSummary=get("sidebarGlobalSearchSummary"),sidebarSearchResults=get("sidebarGlobalSearchResults");
+  function closeSidebarGlobalSearch(focusButton=true){sidebarSearchInput.value="";sidebarSearchSummary.textContent="検索語を入力してください。";sidebarSearchResults.innerHTML="";sidebarSearchPanel.classList.add("hidden");E.globalSearchButton.setAttribute("aria-expanded","false");if(focusButton)E.globalSearchButton.focus()}
+  function renderSidebarGlobalSearch(){const query=sidebarSearchInput.value,all=collectGlobalSearchResults(query),shown=all.slice(0,40);sidebarSearchSummary.textContent=query.trim()?`${all.length}件${all.length>shown.length?`（先頭${shown.length}件を表示）`:""}`:"検索語を入力してください。";sidebarSearchResults.innerHTML=shown.length?shown.map((item,index)=>`<button class="sidebar-global-search-result" type="button" data-sidebar-search-index="${index}"><span>${globalSearchKindLabel(item.kind)}</span><strong>${esc(item.label)}</strong><small>${esc(item.detail||"")}</small></button>`).join(""):query.trim()?'<p class="global-search-empty">一致する項目はありません。</p>':"";qa("[data-sidebar-search-index]",sidebarSearchResults).forEach(button=>button.onclick=()=>{const item=shown[Number(button.dataset.sidebarSearchIndex)];closeSidebarGlobalSearch(false);openGlobalSearchResult(item);closeSide()})}
+  E.globalSearchButton.onclick=()=>{sidebarSearchPanel.classList.remove("hidden");E.globalSearchButton.setAttribute("aria-expanded","true");setTimeout(()=>sidebarSearchInput.focus(),20)};
+  sidebarSearchClose.onclick=()=>closeSidebarGlobalSearch();sidebarSearchInput.oninput=renderSidebarGlobalSearch;sidebarSearchInput.onkeydown=event=>{if(event.key==="Escape"){event.preventDefault();event.stopPropagation();closeSidebarGlobalSearch()}};sidebarSearchInput.closest("form").onsubmit=event=>event.preventDefault();
   E.addGoalButton.onclick=()=>openCreatePanel(goalPanel,E.goalNameInput);
   get("confirmGoalCreateButton").onclick=()=>{if(!E.goalNameInput.value.trim())return;addGoal();closeCreatePanel(goalPanel,E.goalNameInput)};
   get("cancelGoalCreateButton").onclick=()=>closeCreatePanel(goalPanel,E.goalNameInput);
@@ -165,16 +172,17 @@
   renderNav=function(){data.settings.navOrder=data.settings.navOrder.filter(key=>key!=="todayTasks");baseRenderNav();E.todayTasksButton.classList.add("hidden")};
 
   const baseApplyTheme=applyTheme;
-  applyTheme=function(){baseApplyTheme();document.body.dataset.tabSize=data.settings.tabSize;document.body.dataset.tabWidth=data.settings.tabWidth;const select=get("tabSizeSelect"),widthSelect=get("tabWidthSelect");if(select)select.value=data.settings.tabSize;if(widthSelect)widthSelect.value=data.settings.tabWidth;E.shortcutsButton.textContent="🏷 タグ付け";E.shortcutsHelp.textContent="タグやピンで目印を付けた項目をまとめて確認。";E.homeHelper.textContent="今やることと全体の状況を確認。";E.calendarHelper.textContent="予定日・期間・期限を日付で確認。";get("restartDopaTutorialButton")?.classList.toggle("hidden",data.settings.theme!=="dopaboy");if(uxReady&&data.settings.theme==="dopaboy"&&!data.settings.dopaTutorialCompleted)setTimeout(()=>openTutorial("dopa"),80)};
+  applyTheme=function(){baseApplyTheme();document.body.dataset.tabSize=data.settings.tabSize;document.body.dataset.tabWidth=data.settings.tabWidth;const select=get("tabSizeSelect"),widthSelect=get("tabWidthSelect");if(select)select.value=data.settings.tabSize;if(widthSelect)widthSelect.value=data.settings.tabWidth;E.shortcutsButton.textContent="☆ ピン留め";E.shortcutsHelp.textContent="ピン留めした項目をまとめて確認。";E.homeHelper.textContent="今やることと全体の状況を確認。";E.calendarHelper.textContent="予定日・期間・期限を日付で確認。";get("restartDopaTutorialButton")?.classList.toggle("hidden",data.settings.theme!=="dopaboy");get("restartGoalTutorialButton")?.classList.toggle("hidden",data.settings.theme==="dopaboy");if(uxReady&&data.settings.theme==="dopaboy"&&!data.settings.dopaTutorialCompleted)setTimeout(()=>openTutorial("dopa"),80)};
   get("tabSizeSelect").onchange=e=>{data.settings.tabSize=e.target.value;save();applyTheme()};
   get("tabWidthSelect").onchange=e=>{data.settings.tabWidth=e.target.value;save();applyTheme()};
 
-  function tutorialSteps(){return tutorialMode==="dopa"?(window.DOPA_TUTORIAL_STEPS||[]):(window.TUTORIAL_STEPS||[])}
+  function tutorialSteps(){return tutorialMode==="dopa"?(window.DOPA_TUTORIAL_STEPS||[]):tutorialMode==="goal"?(window.GOAL_TUTORIAL_STEPS||[]):(window.TUTORIAL_STEPS||[])}
   function renderTutorial(){const steps=tutorialSteps(),step=steps[tutorialIndex];if(!step)return;const modal=get("tutorialModal");modal.classList.toggle("dopa-tutorial",tutorialMode==="dopa");modal.dataset.target=step.target||"";get("tutorialStepLabel").textContent=`${tutorialIndex+1} / ${steps.length}`;get("tutorialIcon").textContent=step.icon;get("tutorialTitle").textContent=step.title;get("tutorialBody").textContent=step.body;get("tutorialProgress").innerHTML=steps.map((_,i)=>`<i class="${i===tutorialIndex?"active":""}"></i>`).join("");get("tutorialPrevButton").disabled=tutorialIndex===0;get("tutorialNextButton").textContent=tutorialIndex===steps.length-1?"完了":"次へ"}
   function openTutorial(mode){if(!get("tutorialModal").classList.contains("hidden"))return;tutorialMode=mode;tutorialIndex=0;renderTutorial();get("tutorialModal").classList.remove("hidden")}
-  function finishTutorial(){if(tutorialMode==="dopa")data.settings.dopaTutorialCompleted=true;else data.settings.tutorialCompleted=true;save();get("tutorialModal").classList.add("hidden");if(tutorialMode==="normal"&&data.settings.theme==="dopaboy"&&!data.settings.dopaTutorialCompleted)setTimeout(()=>openTutorial("dopa"),120)}
-  get("tutorialPrevButton").onclick=()=>{if(tutorialIndex>0){tutorialIndex--;renderTutorial()}};get("tutorialNextButton").onclick=()=>{if(tutorialIndex<tutorialSteps().length-1){tutorialIndex++;renderTutorial()}else finishTutorial()};get("tutorialSkipButton").onclick=finishTutorial;get("restartTutorialButton").onclick=()=>{closeModal("settingsModal");openTutorial("normal")};get("restartDopaTutorialButton").onclick=()=>{closeModal("settingsModal");openTutorial("dopa")};
+  function maybeOpenGoalTutorial(){if(!uxReady||data.view!=="builder"||data.settings.theme==="dopaboy"||data.settings.goalTutorialCompleted||!get("tutorialModal").classList.contains("hidden"))return;openTutorial("goal")}
+  function finishTutorial(){if(tutorialMode==="dopa")data.settings.dopaTutorialCompleted=true;else if(tutorialMode==="goal")data.settings.goalTutorialCompleted=true;else data.settings.tutorialCompleted=true;save();get("tutorialModal").classList.add("hidden");if(tutorialMode==="normal"&&data.settings.theme==="dopaboy"&&!data.settings.dopaTutorialCompleted)setTimeout(()=>openTutorial("dopa"),120);else if(tutorialMode==="normal")setTimeout(maybeOpenGoalTutorial,120)}
+  get("tutorialPrevButton").onclick=()=>{if(tutorialIndex>0){tutorialIndex--;renderTutorial()}};get("tutorialNextButton").onclick=()=>{if(tutorialIndex<tutorialSteps().length-1){tutorialIndex++;renderTutorial()}else finishTutorial()};get("tutorialSkipButton").onclick=finishTutorial;get("restartTutorialButton").onclick=()=>{closeModal("settingsModal");openTutorial("normal")};get("restartGoalTutorialButton").onclick=()=>{closeModal("settingsModal");openTutorial("goal")};get("restartDopaTutorialButton").onclick=()=>{closeModal("settingsModal");openTutorial("dopa")};
 
   uxReady=true;applyTheme();renderAll();renderFreeboard();activeLocation=captureLocation();placeBackButton();
-  setTimeout(()=>{if(!data.settings.tutorialCompleted)openTutorial("normal");else if(data.settings.theme==="dopaboy"&&!data.settings.dopaTutorialCompleted)openTutorial("dopa")},180)
+  setTimeout(()=>{if(!data.settings.tutorialCompleted)openTutorial("normal");else if(data.settings.theme==="dopaboy"&&!data.settings.dopaTutorialCompleted)openTutorial("dopa");else maybeOpenGoalTutorial()},180)
 })();

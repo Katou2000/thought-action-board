@@ -52,7 +52,17 @@
         <button id="settingsButton" class="icon-button" aria-label="設定">⚙</button>
       </div>
 
-      <button id="globalSearchButton" class="sidebar-search-button" type="button">🔎 全体検索</button>
+      <div class="sidebar-global-search">
+        <button id="globalSearchButton" class="sidebar-search-button" type="button" aria-expanded="false" aria-controls="sidebarGlobalSearchPanel" aria-label="全体検索を開く">🔍 検索</button>
+        <div id="sidebarGlobalSearchPanel" class="sidebar-global-search-panel hidden">
+          <form class="app-search-form sidebar-global-search-form" role="search" aria-label="アプリ全体検索" autocomplete="off">
+            <input id="sidebarGlobalSearchInput" name="workspace_sidebar_query" type="search" placeholder="アプリ全体を検索" autocomplete="off" autocapitalize="none" spellcheck="false">
+            <button id="sidebarGlobalSearchClose" class="sidebar-global-search-close" type="button" aria-label="全体検索を閉じる">×</button>
+          </form>
+          <p id="sidebarGlobalSearchSummary" class="sidebar-global-search-summary">検索語を入力してください。</p>
+          <div id="sidebarGlobalSearchResults" class="sidebar-global-search-results"></div>
+        </div>
+      </div>
 
       <div id="sidebarEditHint" class="sidebar-edit-hint hidden">↕ タブ編集モード：ドラッグで順番変更</div>
 
@@ -61,7 +71,7 @@
         <button id="routineButton" class="nav-button" data-nav-key="routine">🔁 ルーティンタスク</button>
         <button id="calendarButton" class="nav-button" data-nav-key="calendar">📅 カレンダー</button>
         <button id="homeButton" class="nav-button" data-nav-key="home">🏠 ホーム</button>
-        <button id="shortcutsButton" class="nav-button" data-nav-key="shortcuts">🏷 タグ付け</button>
+        <button id="shortcutsButton" class="nav-button" data-nav-key="shortcuts">☆ ピン留め</button>
         <button id="archiveButton" class="nav-button" data-nav-key="archive">✅ 完了したこと</button>
         <button id="templatesButton" class="nav-button" data-nav-key="templates">🧩 テンプレート</button>
         <button id="freeboardButton" class="nav-button" data-nav-key="freeboard">🗒 自由帳</button>
@@ -210,7 +220,7 @@
 
       <section id="shortcutsView" class="view hidden">
         <header class="page-header">
-          <div><p class="eyebrow">TAGS & PINS</p><h2>タグ付け</h2><p id="shortcutsHelp" class="page-helper">タグやピンで目印を付けた項目をまとめて確認。</p></div>
+          <div><p class="eyebrow">PINNED ITEMS</p><h2>ピン留め</h2><p id="shortcutsHelp" class="page-helper">ピン留めした項目をまとめて確認。</p></div>
         </header>
         <div id="shortcutSummary" class="shortcut-summary"></div>
         <div id="shortcutList" class="shortcut-grid"></div>
@@ -498,7 +508,7 @@
         <p id="cloudSyncMessage" class="cloud-sync-message setting-note" role="status" aria-live="polite">Project URLとPublishable keyを設定すると利用できます。</p>
         <p class="setting-note">端末固有の画面・選択状態・見た目設定・最近の履歴は同期しません。クラウドから取得する前に、現在のローカルデータをJSONバックアップできます。</p>
       </section>
-      <section class="settings-section"><h3>アプリ</h3><div class="settings-buttons"><button id="installAppButton" class="primary-button hidden">アプリとして追加</button><button id="restartTutorialButton" class="secondary-button" type="button">チュートリアルをもう一度見る</button><button id="restartDopaTutorialButton" class="secondary-button dopa-tutorial-setting" type="button">DOPAチュートリアルをもう一度見る</button></div><p class="setting-note">データの正式な保存先は従来どおり端末内です。自動同期は端末ごとにONにでき、競合時は手動操作で解決します。</p></section>
+      <section class="settings-section"><h3>アプリ</h3><div class="settings-buttons"><button id="installAppButton" class="primary-button hidden">アプリとして追加</button><button id="restartTutorialButton" class="secondary-button" type="button">チュートリアルをもう一度見る</button><button id="restartGoalTutorialButton" class="secondary-button goal-tutorial-setting" type="button">目標設計チュートリアルをもう一度見る</button><button id="restartDopaTutorialButton" class="secondary-button dopa-tutorial-setting" type="button">DOPAチュートリアルをもう一度見る</button></div><p class="setting-note">データの正式な保存先は従来どおり端末内です。自動同期は端末ごとにONにでき、競合時は手動操作で解決します。</p></section>
     </div>
     <div class="modal-actions"><button class="primary-button" data-close="settingsModal">閉じる</button></div>
   </div></div>

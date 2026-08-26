@@ -8,6 +8,7 @@
 - Prefer small, focused edits over broad refactors. If unexpectedly broad changes are required, report that before expanding scope.
 - Run tests that are necessary and sufficient for the changed area; do not run a full regression suite for every minor UI/CSS/copy edit.
 - Keep work logs concise. Run `git add`, `git commit`, and `git push` once near completion by default.
+- If `git push` is rejected by the execution environment's safety restrictions, do not retry it. Stop with the commit completed and show only the push command the user should run.
 - For minor UI/CSS/copy work, prefer a lighter model when available and quality is not compromised.
 - For Supabase, authentication, RLS, synchronization, or data migration work, prioritize safety over token savings.
 

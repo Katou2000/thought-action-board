@@ -233,7 +233,7 @@ function applyTheme(){
   if(E.builderPageTitle)E.builderPageTitle.textContent=d?"ブロックビルドブレイカー":"目標設計";
   if(E.builderEyebrow)E.builderEyebrow.textContent=d?"BLOCK BUILD BREAKER":"GOAL DESIGN";
   if(E.goalTemplateHeading)E.goalTemplateHeading.textContent=d?"🧱 ブレイカーテンプレート":"🧭 目標テンプレート";
-  const nav=d?{todayTasks:"⚡ 今日やること",routine:"🧪 ルーティンタスク",calendar:"✦ カレンダー",home:"💎 ホーム",shortcuts:"🏷 タグ付け",archive:"💥 完了したこと",templates:"🧩 テンプレート",freeboard:"🧠 自由帳",memo:"🎮 メモ",builder:"🧱 ブロックビルドブレイカー",achievedGoals:"🏆 達成した目標",trash:"☠️ ゴミ箱"}:{todayTasks:"☀ 今日やること",routine:"🔁 ルーティンタスク",calendar:"📅 カレンダー",home:"🏠 ホーム",shortcuts:"🏷 タグ付け",archive:"✅ 完了したこと",templates:"🧩 テンプレート",freeboard:"🗒 自由帳",memo:"📝 メモ",builder:"🧭 目標設計",achievedGoals:"🏆 達成した目標",trash:"🗑 ゴミ箱"};
+  const nav=d?{todayTasks:"⚡ 今日やること",routine:"🧪 ルーティンタスク",calendar:"✦ カレンダー",home:"💎 ホーム",shortcuts:"☆ ピン留め",archive:"💥 完了したこと",templates:"🧩 テンプレート",freeboard:"🧠 自由帳",memo:"🎮 メモ",builder:"🧱 ブロックビルドブレイカー",achievedGoals:"🏆 達成した目標",trash:"☠️ ゴミ箱"}:{todayTasks:"☀ 今日やること",routine:"🔁 ルーティンタスク",calendar:"📅 カレンダー",home:"🏠 ホーム",shortcuts:"☆ ピン留め",archive:"✅ 完了したこと",templates:"🧩 テンプレート",freeboard:"🗒 自由帳",memo:"📝 メモ",builder:"🧭 目標設計",achievedGoals:"🏆 達成した目標",trash:"🗑 ゴミ箱"};
   Object.entries(nav).forEach(([k,v])=>{const b=E.mainNav.querySelector(`[data-nav-key="${k}"]`);if(b)b.textContent=v});
   renderNav();editMode();
 }

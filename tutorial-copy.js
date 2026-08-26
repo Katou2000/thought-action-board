@@ -22,3 +22,10 @@ window.DOPA_TUTORIAL_STEPS = [
   {target:"#dopaMotionToggle",icon:"◌",title:"MOTION OFF",body:"設定の『DOPAの動きを許可』をOFFにすれば、演出を抑えて利用できます。"},
   {target:"body",icon:"✓",title:"READY",body:"読みやすさを優先しながら、DOPAの世界でタスクを進めましょう。"}
 ];
+
+window.GOAL_TUTORIAL_STEPS = [
+  {target:"#builderView",icon:"🧭",title:"目標設計って？",body:"ここは、大きな目標を実際に進められる形へ分けていく場所です。まず目標を決めて、達成までに必要なことをブロックとして積み上げていきます。"},
+  {target:"#blockTitleInput",icon:"🧱",title:"必要なことをブロックに",body:"目標までに必要なことを、一つずつ小さな行動や段階に分けて追加できます。順番を変えたり、内容を書き換えながら、自分なりの道筋を作ってください。"},
+  {target:"#builderBlockList",icon:"✓",title:"できたらブロックを完了",body:"できたブロックは完了操作から進められます。進めた分だけブロックが減って、目標までどこまで進んだかが分かるようになります。"},
+  {target:"#completeGoalButton",icon:"🏆",title:"最後は目標達成",body:"すべて進め終わったら目標を達成できます。達成した目標は「達成した目標」に残るので、あとから振り返ることもできます。"}
+];
