@@ -76,19 +76,17 @@
       </details>
 
       <div class="sidebar-divider"></div>
-      <p class="sidebar-label">ボード</p>
-      <div class="sidebar-add-row compact-create-row">
-        <button id="addBoardButton" class="compact-create-trigger" type="button" title="新しいボード">＋ 新しいボード</button>
-        <div id="boardCreatePanel" class="compact-create-panel hidden">
-          <input id="boardNameInput" placeholder="ボード名" autocomplete="off">
-          <button id="confirmBoardCreateButton" class="primary-button" type="button">作成</button>
-          <button id="cancelBoardCreateButton" class="secondary-button" type="button">キャンセル</button>
-        </div>
+      <div class="sidebar-board-heading"><span class="sidebar-label">ボード</span><button id="addBoardButton" class="sidebar-board-add" type="button" title="新しいボード" aria-label="新しいボード">＋</button></div>
+      <div id="boardCreatePanel" class="compact-create-panel sidebar-board-create hidden">
+        <input id="boardNameInput" placeholder="ボード名" autocomplete="off">
+        <button id="confirmBoardCreateButton" class="primary-button" type="button">作成</button>
+        <button id="cancelBoardCreateButton" class="secondary-button" type="button">キャンセル</button>
       </div>
       <nav id="boardList" class="board-list"></nav>
     </aside>
 
     <main class="main-content">
+      <button id="appBackButton" class="app-back-button hidden" type="button" aria-label="直前の画面に戻る">← 一個戻る</button>
       <section id="todayTasksView" class="view hidden">
         <header class="page-header">
           <div><p id="todayEyebrow" class="eyebrow">TODAY</p><h2>今日やること</h2><p id="todayHelper" class="page-helper">今日のタスクを確認。</p></div>
@@ -190,7 +188,11 @@
           <div class="panel-heading now-tasks-heading"><div><h3>今やること</h3><p>期間中のタスクと、指定日にやるタスクをまとめて確認。</p></div><div class="header-actions"><button id="addPeriodTaskButton" class="secondary-button" type="button">＋ 期間中やる</button><button id="addPlannedTaskButton" class="primary-button" type="button">＋ この日にやる</button></div></div>
           <div class="home-progress-head"><div><span>今日の進捗</span><strong id="homeProgressText">0 / 0</strong></div><strong id="homeProgressPercent">0%</strong></div>
           <div class="linear-progress"><div id="homeProgressFill" class="linear-progress-fill"></div></div>
-          <div id="nowTaskList" class="now-task-list"></div>
+          <section class="home-now-section" aria-labelledby="homeTaskHeading"><h4 id="homeTaskHeading">タスク</h4><div id="nowTaskList" class="now-task-list"></div></section>
+          <section class="home-now-section home-routine-section" aria-labelledby="homeRoutineHeading">
+            <div class="home-now-section-heading"><h4 id="homeRoutineHeading">今日のルーティン</h4><strong id="homeRoutineCount">0 / 0</strong></div>
+            <div id="homeRoutineList" class="home-routine-list"></div>
+          </section>
         </section>
         <div class="summary-grid">
           <article class="summary-card"><span>未完了</span><strong id="openTaskCount">0</strong></article>
@@ -244,8 +246,12 @@
             <button id="deleteBoardButton" class="danger-outline-button">削除</button>
           </div>
         </header>
-        <form class="toolbar app-search-form" role="search" aria-label="カード検索" autocomplete="off">
-          <input id="searchInput" name="board_query" type="search" placeholder="カードを検索" autocomplete="off" autocapitalize="none" spellcheck="false">
+        <form class="toolbar app-search-form board-filter-toolbar" role="search" aria-label="カード検索" autocomplete="off">
+          <button id="boardSearchToggleButton" class="secondary-button board-search-toggle" type="button" aria-expanded="false" aria-controls="boardSearchBox">🔍 検索</button>
+          <div id="boardSearchBox" class="board-search-box hidden">
+            <input id="searchInput" name="board_query" type="search" placeholder="カードを検索" autocomplete="off" autocapitalize="none" spellcheck="false">
+            <button id="boardSearchCloseButton" class="secondary-button board-search-close" type="button" aria-label="検索を閉じる">×</button>
+          </div>
           <select id="tagFilter"><option value="">すべてのタグ</option></select>
           <select id="statusFilter"><option value="all">すべて</option><option value="open">未選択</option><option value="selected">選択中</option><option value="overdue">期限切れ</option><option value="pinned">ピン留め</option></select>
           <select id="sortSelect"><option value="manual">手動順</option><option value="dueAsc">期限が近い順</option><option value="dueDesc">期限が遠い順</option><option value="createdDesc">新しい順</option><option value="createdAsc">古い順</option></select>
@@ -457,13 +463,14 @@
       <section class="settings-section"><h3>タブ</h3>
         <label>タブ位置<select id="navPositionSelect"><option value="left">左</option><option value="right">右</option><option value="top">上</option><option value="bottom">下</option></select></label>
         <label>タブサイズ<select id="tabSizeSelect"><option value="compact">コンパクト</option><option value="standard" selected>標準</option><option value="large">大きめ</option></select></label>
-        <p class="setting-note">PC版の配置。デフォルトは左。上・下では横向きのドックになります。スマホは操作性優先で従来の左ドロワー表示です。</p>
+        <label>タブ横幅<select id="tabWidthSelect"><option value="narrow">狭い</option><option value="standard" selected>標準</option><option value="wide">広い</option></select></label>
+        <p class="setting-note">PC版の配置と幅を調整できます。上・下ではタブの最小幅と左右余白に反映します。スマホは操作性優先の左ドロワー表示です。</p>
         <label class="switch-row"><span>クイック＋ボタンを表示</span><input id="quickAddVisibleToggle" type="checkbox" checked></label>
         <label>＋ボタン位置<select id="quickAddPositionSelect"><option value="auto">自動</option><option value="bottom-right">右下</option><option value="bottom-left">左下</option><option value="top-right">右上</option><option value="top-left">左上</option></select></label>
         <p class="setting-note">自動：左→右下 / 右→左下 / 上→右下 / 下→右上。非表示にしても各画面の追加ボタンは使えます。</p>
         <label class="switch-row"><span>タブ並び替えモード</span><input id="sidebarEditToggle" type="checkbox"></label>
-        <p class="setting-note">ドラッグ、または下の↑↓ボタンで順番を変更できます。</p>
-        <div class="nav-visibility-box"><strong>タブ表示・並び順</strong><p class="setting-note">OFFは「隠したタブ」へ移動。↑↓はスマホでも利用できます。</p><div id="navVisibilityList" class="nav-visibility-list"></div></div>
+        <p class="setting-note">サイドバー上で直接ドラッグする場合に使います。設定一覧は専用ハンドルでいつでも並び替えできます。</p>
+        <div class="nav-visibility-box"><strong>タブ表示・並び順</strong><p class="setting-note">⋮⋮をドラッグ。OFFは「隠したタブ」へ移動し、小さな↑↓も補助操作として使えます。</p><div id="navVisibilityList" class="nav-visibility-list"></div></div>
         <div class="settings-buttons"><button id="resetNavOrderButton" class="secondary-button">タブ順を初期化</button><button id="resetNavVisibilityButton" class="secondary-button">全部表示</button></div>
       </section>
       <section class="settings-section"><h3>保存</h3>
@@ -509,6 +516,7 @@
   <script src="supabase-config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="script.js"></script>
+  <script src="tutorial-copy.js"></script>
   <script src="ux-v2.js"></script>
   <script src="cloud-sync.js"></script>
   <script>if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js'));}</script>
