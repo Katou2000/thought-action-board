@@ -6992,9 +6992,10 @@ body[data-theme="black"] .calendar-task-dot:hover,body[data-theme="black"] .cale
 }
 
 /* ===== sidebar search and compact card footer follow-up ===== */
-.sidebar-global-search{width:100%;margin-bottom:10px}
-.sidebar-global-search .sidebar-search-button{margin-bottom:0}
-.sidebar-global-search-panel{display:grid;gap:7px;margin-top:7px;padding:8px;border:1px solid var(--border);border-radius:10px;background:var(--panel2)}
+.sidebar-global-search{display:grid;justify-items:end;width:100%;margin:8px 0 6px}
+.sidebar-global-search .sidebar-search-button{margin:0}
+.sidebar-global-search .sidebar-search-icon-button{display:grid;place-items:center;width:36px;height:36px;padding:0;text-align:center;font-size:16px}
+.sidebar-global-search-panel{display:grid;justify-self:stretch;gap:7px;width:100%;margin-top:7px;padding:8px;border:1px solid var(--border);border-radius:10px;background:var(--panel2)}
 .sidebar-global-search-form{display:grid;grid-template-columns:minmax(0,1fr) 34px;gap:5px}
 .sidebar-global-search-form input{min-width:0;width:100%;padding:8px 9px;border:1px solid var(--border);border-radius:8px;background:var(--panel);color:var(--text)}
 .sidebar-global-search-close{width:34px;padding:0;border:1px solid var(--border);border-radius:8px;background:var(--panel);color:var(--text);font-weight:900}
@@ -7007,9 +7008,13 @@ body[data-theme="dopaboy"] .sidebar-global-search-panel{border:2px solid #65469f
 
 .memo-card{display:flex;flex-direction:column}
 .memo-card .card-info{display:flex;flex-direction:column;justify-content:flex-end;min-height:35px;margin-top:auto}
-.memo-card .card-footer{margin-top:0;padding-top:10px;flex-wrap:wrap;align-items:stretch;overflow:visible}
-.memo-card .card-footer button{flex:0 1 auto;min-width:0;max-width:100%;white-space:normal}
-.memo-card .card-footer .schedule-card-button{white-space:nowrap}
+.card-schedule-row{display:flex;justify-content:flex-start;padding-top:8px}
+.card-schedule-row .schedule-card-button{min-height:30px;padding:4px 8px;border:1px solid rgba(15,23,42,.16);border-radius:8px;background:rgba(255,255,255,.65);color:#1f2937;font-size:11px;white-space:nowrap}
+.memo-card .card-footer{justify-content:flex-end;margin-top:0;padding-top:9px;flex-wrap:nowrap;align-items:stretch;overflow:visible}
+.memo-card .card-footer button{flex:0 0 auto;min-width:0;max-width:100%;padding:5px 7px;white-space:nowrap}
+.app-version-button{display:block;margin:14px auto 0;padding:4px 10px;border:0;background:transparent;color:var(--muted);font-size:11px;opacity:.62;cursor:default;transition:opacity .14s ease}
+@media(hover:hover) and (pointer:fine){.app-version-button:hover{opacity:.78}}
+.app-version-button:focus-visible{outline:1px dotted color-mix(in srgb,var(--muted) 55%,transparent);outline-offset:2px;opacity:.78}
 
 @media(min-width:821px){
   body[data-nav-position="left"] .sidebar,body[data-nav-position="right"] .sidebar{padding-left:18px;padding-right:18px}
@@ -7017,5 +7022,6 @@ body[data-theme="dopaboy"] .sidebar-global-search-panel{border:2px solid #65469f
 @media(max-width:820px){
   .sidebar{padding-left:18px;padding-right:18px}
   .sidebar-global-search-results{max-height:36vh}
+  .memo-card .card-footer{flex-wrap:wrap}
   .memo-card .card-footer button{min-height:36px;padding:7px 9px}
 }

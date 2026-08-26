@@ -52,18 +52,6 @@
         <button id="settingsButton" class="icon-button" aria-label="設定">⚙</button>
       </div>
 
-      <div class="sidebar-global-search">
-        <button id="globalSearchButton" class="sidebar-search-button" type="button" aria-expanded="false" aria-controls="sidebarGlobalSearchPanel" aria-label="全体検索を開く">🔍 検索</button>
-        <div id="sidebarGlobalSearchPanel" class="sidebar-global-search-panel hidden">
-          <form class="app-search-form sidebar-global-search-form" role="search" aria-label="アプリ全体検索" autocomplete="off">
-            <input id="sidebarGlobalSearchInput" name="workspace_sidebar_query" type="search" placeholder="アプリ全体を検索" autocomplete="off" autocapitalize="none" spellcheck="false">
-            <button id="sidebarGlobalSearchClose" class="sidebar-global-search-close" type="button" aria-label="全体検索を閉じる">×</button>
-          </form>
-          <p id="sidebarGlobalSearchSummary" class="sidebar-global-search-summary">検索語を入力してください。</p>
-          <div id="sidebarGlobalSearchResults" class="sidebar-global-search-results"></div>
-        </div>
-      </div>
-
       <div id="sidebarEditHint" class="sidebar-edit-hint hidden">↕ タブ編集モード：ドラッグで順番変更</div>
 
       <nav id="mainNav" class="main-nav">
@@ -80,6 +68,17 @@
         <button id="achievedGoalsButton" class="nav-button" data-nav-key="achievedGoals">🏆 達成した目標</button>
         <button id="trashButton" class="nav-button" data-nav-key="trash">🗑 ゴミ箱</button>
       </nav>
+      <div class="sidebar-global-search">
+        <button id="globalSearchButton" class="sidebar-search-button sidebar-search-icon-button" type="button" aria-expanded="false" aria-controls="sidebarGlobalSearchPanel" aria-label="全体検索を開く" title="全体検索">🔍</button>
+        <div id="sidebarGlobalSearchPanel" class="sidebar-global-search-panel hidden">
+          <form class="app-search-form sidebar-global-search-form" role="search" aria-label="アプリ全体検索" autocomplete="off">
+            <input id="sidebarGlobalSearchInput" name="workspace_sidebar_query" type="search" placeholder="アプリ全体を検索" autocomplete="off" autocapitalize="none" spellcheck="false">
+            <button id="sidebarGlobalSearchClose" class="sidebar-global-search-close" type="button" aria-label="全体検索を閉じる">×</button>
+          </form>
+          <p id="sidebarGlobalSearchSummary" class="sidebar-global-search-summary">検索語を入力してください。</p>
+          <div id="sidebarGlobalSearchResults" class="sidebar-global-search-results"></div>
+        </div>
+      </div>
       <details id="hiddenNavDrawer" class="hidden-nav-drawer hidden">
         <summary>隠したタブ <span id="hiddenNavCount">0</span></summary>
         <nav id="hiddenNavList" class="hidden-nav-list"></nav>
@@ -455,7 +454,7 @@
     <div class="modal-header"><h2>設定</h2><button class="close-button" data-close="settingsModal">×</button></div>
     <div class="settings-grid">
       <section class="settings-section"><h3>見た目</h3>
-        <label>テーマ<select id="themeSelect"><option value="simple">Simple</option><option value="black">Black</option><option value="dopaboy">DOPA-BOY</option></select></label>
+        <label>テーマ<select id="themeSelect"><option value="simple">Simple</option><option value="black">Black</option></select></label>
         <div class="color-setting">
           <span class="settings-field-label">アクセント色</span>
           <div id="accentPalette" class="color-palette"><button type="button" class="color-swatch" data-color="#ff2b7f" style="--swatch:#ff2b7f" aria-label="PINK"></button><button type="button" class="color-swatch" data-color="#00d0ff" style="--swatch:#00d0ff" aria-label="CYAN"></button><button type="button" class="color-swatch" data-color="#b8d900" style="--swatch:#b8d900" aria-label="LIME"></button><button type="button" class="color-swatch" data-color="#ff7a00" style="--swatch:#ff7a00" aria-label="ORANGE"></button><button type="button" class="color-swatch" data-color="#8f39e5" style="--swatch:#8f39e5" aria-label="PURPLE"></button><button type="button" class="color-swatch" data-color="#ffe857" style="--swatch:#ffe857" aria-label="YELLOW"></button><button type="button" class="color-swatch" data-color="#4f7cff" style="--swatch:#4f7cff" aria-label="BLUE"></button><button type="button" class="color-swatch" data-color="#ff3b5c" style="--swatch:#ff3b5c" aria-label="RED"></button><button type="button" class="color-swatch" data-color="#21e6c1" style="--swatch:#21e6c1" aria-label="MINT"></button><button type="button" class="color-swatch" data-color="#ff00c8" style="--swatch:#ff00c8" aria-label="MAGENTA"></button></div>
@@ -510,6 +509,7 @@
       </section>
       <section class="settings-section"><h3>アプリ</h3><div class="settings-buttons"><button id="installAppButton" class="primary-button hidden">アプリとして追加</button><button id="restartTutorialButton" class="secondary-button" type="button">チュートリアルをもう一度見る</button><button id="restartGoalTutorialButton" class="secondary-button goal-tutorial-setting" type="button">目標設計チュートリアルをもう一度見る</button><button id="restartDopaTutorialButton" class="secondary-button dopa-tutorial-setting" type="button">DOPAチュートリアルをもう一度見る</button></div><p class="setting-note">データの正式な保存先は従来どおり端末内です。自動同期は端末ごとにONにでき、競合時は手動操作で解決します。</p></section>
     </div>
+    <button id="appVersionButton" class="app-version-button" type="button" aria-label="アプリバージョン 1.1.1">v1.1.1</button>
     <div class="modal-actions"><button class="primary-button" data-close="settingsModal">閉じる</button></div>
   </div></div>
 

@@ -102,8 +102,8 @@
   const baseRenderCard=renderCard;
   renderCard=function(card,sectionId){
     const el=baseRenderCard(card,sectionId),foot=el.querySelector(".card-footer");el.style.setProperty("--card-user-color",cardColors[card.color]||cardColors.white);
-    if(card.type==="task"){const button=document.createElement("button");button.type="button";button.className="schedule-card-button";button.textContent="📅 今やる";button.title="今やることの日付・期間を設定";button.onclick=()=>{openCardModal(card.id);setTimeout(()=>get("cardScheduleMode").focus(),30)};foot?.insertBefore(button,foot.firstChild)}
     const info=document.createElement("div");info.className="card-info";el.querySelectorAll(":scope > .meta-row, :scope > .tag-row").forEach(row=>info.appendChild(row));el.insertBefore(info,foot);
+    if(card.type==="task"){const row=document.createElement("div"),button=document.createElement("button");row.className="card-schedule-row";button.type="button";button.className="schedule-card-button";button.textContent="📅 今やる";button.title="今やることの日付・期間を設定";button.onclick=()=>{openCardModal(card.id);setTimeout(()=>get("cardScheduleMode").focus(),30)};row.appendChild(button);el.insertBefore(row,foot)}
     return el
   };
 
@@ -171,10 +171,13 @@
   const baseRenderNav=renderNav;
   renderNav=function(){data.settings.navOrder=data.settings.navOrder.filter(key=>key!=="todayTasks");baseRenderNav();E.todayTasksButton.classList.add("hidden")};
 
+  function syncDopaThemeOption(){let option=E.themeSelect.querySelector('option[value="dopaboy"]');if(data.settings.dopaUnlocked&&!option){option=document.createElement("option");option.value="dopaboy";option.textContent="DOPA-BOY";E.themeSelect.appendChild(option)}else if(!data.settings.dopaUnlocked&&option)option.remove()}
   const baseApplyTheme=applyTheme;
-  applyTheme=function(){baseApplyTheme();document.body.dataset.tabSize=data.settings.tabSize;document.body.dataset.tabWidth=data.settings.tabWidth;const select=get("tabSizeSelect"),widthSelect=get("tabWidthSelect");if(select)select.value=data.settings.tabSize;if(widthSelect)widthSelect.value=data.settings.tabWidth;E.shortcutsButton.textContent="☆ ピン留め";E.shortcutsHelp.textContent="ピン留めした項目をまとめて確認。";E.homeHelper.textContent="今やることと全体の状況を確認。";E.calendarHelper.textContent="予定日・期間・期限を日付で確認。";get("restartDopaTutorialButton")?.classList.toggle("hidden",data.settings.theme!=="dopaboy");get("restartGoalTutorialButton")?.classList.toggle("hidden",data.settings.theme==="dopaboy");if(uxReady&&data.settings.theme==="dopaboy"&&!data.settings.dopaTutorialCompleted)setTimeout(()=>openTutorial("dopa"),80)};
+  applyTheme=function(){syncDopaThemeOption();baseApplyTheme();document.body.dataset.tabSize=data.settings.tabSize;document.body.dataset.tabWidth=data.settings.tabWidth;const select=get("tabSizeSelect"),widthSelect=get("tabWidthSelect");if(select)select.value=data.settings.tabSize;if(widthSelect)widthSelect.value=data.settings.tabWidth;E.shortcutsButton.textContent="☆ ピン留め";E.shortcutsHelp.textContent="ピン留めした項目をまとめて確認。";E.homeHelper.textContent="今やることと全体の状況を確認。";E.calendarHelper.textContent="予定日・期間・期限を日付で確認。";get("restartDopaTutorialButton")?.classList.toggle("hidden",data.settings.theme!=="dopaboy");get("restartGoalTutorialButton")?.classList.toggle("hidden",data.settings.theme==="dopaboy");if(uxReady&&data.settings.theme==="dopaboy"&&!data.settings.dopaTutorialCompleted)setTimeout(()=>openTutorial("dopa"),80)};
   get("tabSizeSelect").onchange=e=>{data.settings.tabSize=e.target.value;save();applyTheme()};
   get("tabWidthSelect").onchange=e=>{data.settings.tabWidth=e.target.value;save();applyTheme()};
+  let dopaUnlockTapCount=0,dopaUnlockResetTimer=null;
+  get("appVersionButton").onclick=()=>{if(data.settings.dopaUnlocked)return;dopaUnlockTapCount++;clearTimeout(dopaUnlockResetTimer);dopaUnlockResetTimer=setTimeout(()=>dopaUnlockTapCount=0,4000);if(dopaUnlockTapCount<5)return;dopaUnlockTapCount=0;clearTimeout(dopaUnlockResetTimer);data.settings.dopaUnlocked=true;save();syncDopaThemeOption();toast("DOPA MODE UNLOCKED.")};
 
   function tutorialSteps(){return tutorialMode==="dopa"?(window.DOPA_TUTORIAL_STEPS||[]):tutorialMode==="goal"?(window.GOAL_TUTORIAL_STEPS||[]):(window.TUTORIAL_STEPS||[])}
   function renderTutorial(){const steps=tutorialSteps(),step=steps[tutorialIndex];if(!step)return;const modal=get("tutorialModal");modal.classList.toggle("dopa-tutorial",tutorialMode==="dopa");modal.dataset.target=step.target||"";get("tutorialStepLabel").textContent=`${tutorialIndex+1} / ${steps.length}`;get("tutorialIcon").textContent=step.icon;get("tutorialTitle").textContent=step.title;get("tutorialBody").textContent=step.body;get("tutorialProgress").innerHTML=steps.map((_,i)=>`<i class="${i===tutorialIndex?"active":""}"></i>`).join("");get("tutorialPrevButton").disabled=tutorialIndex===0;get("tutorialNextButton").textContent=tutorialIndex===steps.length-1?"完了":"次へ"}
