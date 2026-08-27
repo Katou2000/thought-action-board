@@ -506,6 +506,7 @@
         <div class="settings-buttons"><button id="cloudUploadButton" class="primary-button" disabled>手動：クラウドへ保存</button><button id="cloudDownloadButton" class="secondary-button" disabled>手動：クラウドから取得</button></div>
         <p id="cloudSyncMessage" class="cloud-sync-message setting-note" role="status" aria-live="polite">Project URLとPublishable keyを設定すると利用できます。</p>
         <p class="setting-note">端末固有の画面・選択状態・見た目設定・最近の履歴は同期しません。クラウドから取得する前に、現在のローカルデータをJSONバックアップできます。</p>
+        <p class="setting-note">Storage保存画像はJSONに参照情報だけが入り、画像本体は含まれません。既存のBase64画像は従来どおりJSONに含まれます。</p>
       </section>
       <section class="settings-section"><h3>アプリ</h3><div class="settings-buttons"><button id="installAppButton" class="primary-button hidden">アプリとして追加</button><button id="restartTutorialButton" class="secondary-button" type="button">チュートリアルをもう一度見る</button><button id="restartGoalTutorialButton" class="secondary-button goal-tutorial-setting" type="button">目標設計チュートリアルをもう一度見る</button><button id="restartDopaTutorialButton" class="secondary-button dopa-tutorial-setting" type="button">DOPAチュートリアルをもう一度見る</button></div><p class="setting-note">データの正式な保存先は従来どおり端末内です。自動同期は端末ごとにONにでき、競合時は手動操作で解決します。</p></section>
     </div>
@@ -525,6 +526,7 @@
   </div></div>
   <script src="supabase-config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="image-storage.js"></script>
   <script src="script.js"></script>
   <script src="tutorial-copy.js"></script>
   <script src="ux-v2.js"></script>

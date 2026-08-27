@@ -2,7 +2,8 @@
 
 (()=>{
   const META_KEY="taskKanrinnerCloudMetaV1",AUTO_KEY="taskKanrinnerAutoSyncV1";
-  const DEBOUNCE_MS=1800,POLL_MS=45000,REQUEST_TIMEOUT_MS=15000,CHECK_THROTTLE_MS=5000,SIZE_WARNING_BYTES=3*1024*1024;
+  const DEBOUNCE_MS=1800,POLL_MS=45000,REQUEST_TIMEOUT_MS=15000,CHECK_THROTTLE_MS=5000,SIZE_WARNING_BYTES=3*1024*1024,IMAGE_BUCKET="task-images";
+  const IMAGE_TYPES={"image/jpeg":"jpg","image/png":"png","image/webp":"webp","image/gif":"gif"};
   const config=window.TASK_KANRINNER_SUPABASE_CONFIG||{},bridge=window.taskKanrinnerCloudBridge;
   const elements={email:document.getElementById("cloudEmailInput"),password:document.getElementById("cloudPasswordInput"),signUp:document.getElementById("cloudSignUpButton"),login:document.getElementById("cloudLoginButton"),logout:document.getElementById("cloudLogoutButton"),autoSync:document.getElementById("cloudAutoSyncToggle"),upload:document.getElementById("cloudUploadButton"),download:document.getElementById("cloudDownloadButton"),loginStatus:document.getElementById("cloudLoginStatus"),syncStatus:document.getElementById("cloudSyncStatus"),lastSync:document.getElementById("cloudLastSyncLabel"),revision:document.getElementById("cloudRevisionLabel"),dataSize:document.getElementById("cloudDataSizeLabel"),message:document.getElementById("cloudSyncMessage"),compact:document.getElementById("syncCompact"),compactButton:document.getElementById("syncCompactButton"),compactIcon:document.getElementById("syncCompactIcon"),compactLabel:document.getElementById("syncCompactLabel"),compactDetail:document.getElementById("syncCompactDetail"),compactStatus:document.getElementById("syncCompactStatus"),compactLastSync:document.getElementById("syncCompactLastSync"),compactRevision:document.getElementById("syncCompactRevision")};
 
@@ -41,6 +42,29 @@
   function errorMessage(error){return error?.message?`エラー：${error.message}`:"処理に失敗しました。"}
   function networkFailure(error){return navigator.onLine===false||error?.name==="AbortError"||/fetch|network|timeout|abort|failed to fetch/i.test(error?.message||"")}
   function handleFailure(error,context,{alertUser=false}={}){console.error(error);const offline=networkFailure(error),detail=offline?`${context}できませんでした。ローカル変更は保持され、次回再試行します。`:errorMessage(error);setStatus(offline?"オフライン":"エラー",detail,"error");if(alertUser)alert(detail)}
+  function getStorageUserId(){return ready&&currentUser?currentUser.id:null}
+  function storagePath(reference){
+    if(!ready||!currentUser||!client)throw new Error("Storage画像を利用するにはログインが必要です。");
+    if(reference?.bucket!==IMAGE_BUCKET||typeof reference?.path!=="string"||!reference.path.startsWith(`${currentUser.id}/`))throw new Error("このStorage画像を操作する権限がありません。");
+    return reference.path
+  }
+  function storageSegment(value){const result=String(value||"").replace(/[^a-zA-Z0-9_-]/g,"_");if(!result)throw new Error("画像の保存先IDが正しくありません。");return result}
+  async function uploadImage(file,area,ownerId){
+    if(!ready||!currentUser||!client)return null;
+    const extension=IMAGE_TYPES[file?.type];if(!extension)throw new Error("JPEG・PNG・WebP・GIF画像を選択してください。");
+    if(!["cards","freeboard"].includes(area))throw new Error("画像の保存先が正しくありません。");
+    const unique=globalThis.crypto?.randomUUID?.()||`${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    const path=`${currentUser.id}/${area}/${storageSegment(ownerId)}/${unique}.${extension}`;
+    const{error}=await client.storage.from(IMAGE_BUCKET).upload(path,file,{contentType:file.type,upsert:false,cacheControl:"3600"});
+    if(error)throw error;
+    return{type:"storage",bucket:IMAGE_BUCKET,path,mime:file.type,size:file.size}
+  }
+  async function createImageUrl(reference){const path=storagePath(reference),{data,error}=await client.storage.from(IMAGE_BUCKET).createSignedUrl(path,3600);if(error)throw error;return data?.signedUrl||""}
+  async function deleteImages(references){
+    const paths=[...new Set((references||[]).map(storagePath))];if(!paths.length)return true;
+    const{error}=await client.storage.from(IMAGE_BUCKET).remove(paths);if(error)throw error;return true
+  }
+  function publishStorageSession(){window.dispatchEvent(new CustomEvent("task-kanrinner-storage-session",{detail:{userId:getStorageUserId()}}))}
 
   function loadUserState(userId){const meta=readMeta(),usable=meta&&(!meta.userId||meta.userId===userId);knownRevision=usable?revisionText(meta.revision):null;remoteRevisionSeen=null;remoteExists=null;lastSyncedHash=usable&&meta.lastSyncedHash?meta.lastSyncedHash:null;lastSyncedJson=null;localDirty=false;remoteBlocked=false;notifiedConflictRevision=null;autoEnabled=readAutoPreference(userId);renderLastSync(usable?meta:null);renderRevision()}
   function persistBaseline(direction,row,currentSnapshot,{touchTime=true}={}){const old=readMeta(),syncedAt=touchTime?new Date().toISOString():(old?.syncedAt||new Date().toISOString());knownRevision=revisionText(row.revision);remoteRevisionSeen=knownRevision;remoteExists=true;lastSyncedHash=currentSnapshot.hash;lastSyncedJson=currentSnapshot.json;localDirty=false;remoteBlocked=false;notifiedConflictRevision=null;const meta={userId:currentUser.id,direction,syncedAt,remoteUpdatedAt:row.updated_at||null,revision:knownRevision,lastSyncedHash};writeJson(META_KEY,meta);renderLastSync(meta);renderRevision();renderSize(currentSnapshot.bytes)}
@@ -98,13 +122,13 @@
 
   function stopPolling(){if(pollTimer){clearInterval(pollTimer);pollTimer=null}}
   function startPolling(){stopPolling();pollTimer=setInterval(()=>{if(document.visibilityState==="visible")void checkRemoteRevision("定期確認")},POLL_MS)}
-  function deactivateSession(){sessionGeneration++;currentUser=null;activeUserId=null;autoEnabled=false;knownRevision=null;remoteRevisionSeen=null;remoteExists=null;lastSyncedHash=null;lastSyncedJson=null;localDirty=false;remoteBlocked=false;pendingDownloadRevision=null;clearUploadTimer();uploadQueued=false;stopPolling();setLoginStatus();if(elements.syncStatus)elements.syncStatus.textContent="未ログイン";renderRevision();updateControls()}
-  async function activateSession(session){const user=session?.user;if(!user){deactivateSession();setMessage("メールアドレスとパスワードでログインしてください。");return}currentUser=user;setLoginStatus();if(activeUserId===user.id){updateControls();return}activeUserId=user.id;const generation=++sessionGeneration;loadUserState(user.id);setLoginStatus();updateControls();startPolling();setStatus("同期中","起動後のクラウドrevisionを確認しています。");await refreshDirtyStatus();if(generation!==sessionGeneration)return;void checkRemoteRevision("ログイン確認",{force:true,allowAuto:autoEnabled})}
+  function deactivateSession(){sessionGeneration++;currentUser=null;activeUserId=null;autoEnabled=false;knownRevision=null;remoteRevisionSeen=null;remoteExists=null;lastSyncedHash=null;lastSyncedJson=null;localDirty=false;remoteBlocked=false;pendingDownloadRevision=null;clearUploadTimer();uploadQueued=false;stopPolling();setLoginStatus();if(elements.syncStatus)elements.syncStatus.textContent="未ログイン";renderRevision();updateControls();publishStorageSession()}
+  async function activateSession(session){const user=session?.user;if(!user){deactivateSession();setMessage("メールアドレスとパスワードでログインしてください。");return}currentUser=user;setLoginStatus();publishStorageSession();if(activeUserId===user.id){updateControls();return}activeUserId=user.id;const generation=++sessionGeneration;loadUserState(user.id);setLoginStatus();updateControls();startPolling();setStatus("同期中","起動後のクラウドrevisionを確認しています。");await refreshDirtyStatus();if(generation!==sessionGeneration)return;void checkRemoteRevision("ログイン確認",{force:true,allowAuto:autoEnabled})}
   async function toggleAutoSync(){if(!currentUser)return;autoEnabled=elements.autoSync.checked;writeAutoPreference(currentUser.id,autoEnabled);clearUploadTimer();uploadQueued=false;if(autoEnabled){remoteBlocked=false;notifiedConflictRevision=null;setStatus("同期中","自動同期を開始する前にクラウドrevisionを確認しています。");await checkRemoteRevision("自動同期ON",{force:true,allowAuto:true})}else{await refreshDirtyStatus();if(remoteBlocked)setStatus("他端末の更新あり","自動同期をOFFにしました。競合は手動保存または手動取得で解決してください。","error");else setMessage(localDirty?"自動同期をOFFにしました。ローカル変更は端末内に保持されています。":"自動同期をOFFにしました。手動同期は引き続き利用できます。") }updateControls()}
 
   async function initialize(){renderLastSync();updateControls();if(bridge)void snapshot().then(x=>renderSize(x.bytes));if(!bridge){if(elements.loginStatus)elements.loginStatus.textContent="同期機能の読込エラー";setStatus("エラー","同期ブリッジを読み込めませんでした。","error");return}if(!configured()){if(elements.loginStatus)elements.loginStatus.textContent="Supabase未設定";setStatus("エラー","supabase-config.js にProject URLとPublishable keyを設定してください。","error");return}if(!window.supabase?.createClient){if(elements.loginStatus)elements.loginStatus.textContent="Supabase JS読込エラー";setStatus("エラー","Supabase JS v2を読み込めませんでした。オンラインで再読み込みしてください。","error");return}try{client=window.supabase.createClient(config.projectUrl,config.publishableKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});ready=true;updateControls();client.auth.onAuthStateChange((_event,session)=>queueMicrotask(()=>void activateSession(session)));const{data,error}=await client.auth.getSession();if(error)throw error;await activateSession(data.session)}catch(error){ready=false;updateControls();if(elements.loginStatus)elements.loginStatus.textContent="初期化エラー";handleFailure(error,"Supabase初期化")}}
 
-  window.taskKanrinnerCloudSync={onLocalSaved,checkNow:()=>checkRemoteRevision("手動確認",{force:true})};
+  window.taskKanrinnerCloudSync={onLocalSaved,checkNow:()=>checkRemoteRevision("手動確認",{force:true}),getStorageUserId,uploadImage,createImageUrl,deleteImages};
   elements.signUp?.addEventListener("click",signUp);elements.login?.addEventListener("click",login);elements.logout?.addEventListener("click",logout);elements.autoSync?.addEventListener("change",()=>void toggleAutoSync());elements.upload?.addEventListener("click",manualUpload);elements.download?.addEventListener("click",manualDownload);elements.password?.addEventListener("keydown",event=>{if(event.key==="Enter"&&!elements.login.disabled)login()});
   elements.compactButton?.addEventListener("click",()=>{const open=elements.compactDetail.classList.toggle("hidden")===false;elements.compactButton.setAttribute("aria-expanded",open?"true":"false");publishCompactState()});
   document.addEventListener("click",event=>{if(elements.compact&&!event.target.closest("#syncCompact")){elements.compactDetail?.classList.add("hidden");elements.compactButton?.setAttribute("aria-expanded","false")}});
