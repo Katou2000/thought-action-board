@@ -103,7 +103,6 @@
   renderCard=function(card,sectionId){
     const el=baseRenderCard(card,sectionId),foot=el.querySelector(".card-footer");el.style.setProperty("--card-user-color",cardColors[card.color]||cardColors.white);
     const info=document.createElement("div");info.className="card-info";el.querySelectorAll(":scope > .meta-row, :scope > .tag-row").forEach(row=>info.appendChild(row));el.insertBefore(info,foot);
-    if(card.type==="task"){const row=document.createElement("div"),button=document.createElement("button");row.className="card-schedule-row";button.type="button";button.className="schedule-card-button";button.textContent="📅 今やる";button.title="今やることの日付・期間を設定";button.onclick=()=>{openCardModal(card.id);setTimeout(()=>get("cardScheduleMode").focus(),30)};row.appendChild(button);el.insertBefore(row,foot)}
     return el
   };
 

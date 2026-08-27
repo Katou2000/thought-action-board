@@ -6943,7 +6943,6 @@ body[data-theme="dopaboy"] .app-back-button{border:2px solid #00f0ff;background:
 
 .card-footer{min-width:0;max-width:100%;justify-content:flex-start;overflow:visible}
 .card-footer button{flex:0 0 auto;max-width:100%;overflow-wrap:anywhere}
-.card-footer .schedule-card-button{flex:0 0 auto;white-space:nowrap}
 
 .home-now-section{margin-top:15px}
 .home-now-section>h4,.home-now-section-heading h4{margin:0 0 9px;font-size:13px}
@@ -6979,7 +6978,6 @@ body[data-theme="black"] .calendar-task-dot:hover,body[data-theme="black"] .cale
 @media(max-width:820px){
   .card-footer{justify-content:flex-start;align-items:stretch;gap:6px}
   .card-footer button{flex:0 0 auto;min-height:34px;padding:6px 8px;white-space:normal}
-  .card-footer .schedule-card-button{flex:0 0 auto;white-space:nowrap}
   .calendar-add-button{width:28px;height:28px;font-size:12px}
   .app-back-button{min-height:38px;margin-bottom:8px}
   .nav-order-row{grid-template-columns:minmax(0,1fr) auto;gap:5px}
@@ -7008,8 +7006,6 @@ body[data-theme="dopaboy"] .sidebar-global-search-panel{border:2px solid #65469f
 
 .memo-card{display:flex;flex-direction:column}
 .memo-card .card-info{display:flex;flex-direction:column;justify-content:flex-end;min-height:35px;margin-top:auto}
-.card-schedule-row{display:flex;justify-content:flex-start;padding-top:8px}
-.card-schedule-row .schedule-card-button{min-height:30px;padding:4px 8px;border:1px solid rgba(15,23,42,.16);border-radius:8px;background:rgba(255,255,255,.65);color:#1f2937;font-size:11px;white-space:nowrap}
 .memo-card .card-footer{justify-content:flex-end;margin-top:0;padding-top:9px;flex-wrap:nowrap;align-items:stretch;overflow:visible}
 .memo-card .card-footer button{flex:0 0 auto;min-width:0;max-width:100%;padding:5px 7px;white-space:nowrap}
 .app-version-button{display:block;margin:14px auto 0;padding:4px 10px;border:0;background:transparent;color:var(--muted);font-size:11px;opacity:.62;cursor:default;transition:opacity .14s ease}
