@@ -22,7 +22,8 @@ window.DOPA_TUTORIAL_STEPS = [
   {target:"body",icon:"🎨",title:"SAME SYSTEM, DIFFERENT WORLD",body:"システムも、使い方も同じ。\nただ、大きな演出によるドーパミンの分泌量が段違いだぜ。"},
   {target:"#builderView",icon:"💥",title:"BLOCK BUILD BREAKER",body:"通常モードの「目標設計」は、DOPAでは「ブロックビルドブレイカー」に変わっている。\n使い方は変わらない。\nしかし、演出まで段違いになった目標設計は、もはや同じ機能と呼べるのか？？"},
   {target:"#dopaMotionToggle",icon:"◌",title:"TOO MUCH DOPA?",body:"DOPA演出はハデハデすぎて重い。\nでも、DOPA-BOYのままでいたい。\nそんな将来有望なBOYSのために、動きを止めるオプションも設定可能だ。"},
-  {target:"body",icon:"✓",title:"READY, DOPA-BOY",body:"説明は以上。\nお前だけのDOPAを描け。\n\nNO DOPAMINE, NO LIFE.\n全てのドパガキへ捧ぐ。"}
+  {target:"body",icon:"✓",title:"READY, DOPA-BOY",body:"説明は以上。\nお前だけのDOPAを描け。"},
+  {target:"body",icon:"⚡",title:"NO DOPAMINE, NO LIFE.",body:"全てのドパガキへ捧ぐ。"}
 ];
 
 window.GOAL_TUTORIAL_STEPS = [
