@@ -79,6 +79,8 @@
       <div class="utility-bar" aria-label="ユーティリティ">
         <button id="appBackButton" class="app-back-button hidden" type="button" aria-label="直前の画面に戻る">← 一個戻る</button>
         <span class="utility-spacer"></span>
+        <button id="undoButton" class="utility-icon-button history-button" type="button" aria-label="元に戻す" title="元に戻す（Ctrl+Z）" disabled>↶</button>
+        <button id="redoButton" class="utility-icon-button history-button" type="button" aria-label="やり直す" title="やり直す（Ctrl+Y）" disabled>↷</button>
         <div class="sidebar-global-search utility-search">
           <button id="globalSearchButton" class="sidebar-search-button sidebar-search-icon-button utility-icon-button" type="button" aria-expanded="false" aria-controls="sidebarGlobalSearchPanel" aria-label="全体検索を開く" title="全体検索">🔍</button>
           <div id="sidebarGlobalSearchPanel" class="sidebar-global-search-panel hidden">
@@ -201,6 +203,14 @@
             <div class="panel-heading now-tasks-heading"><div><h3>今やること</h3><p>期間中のタスクと、指定日にやるタスクをまとめて確認。</p></div><div class="header-actions"><button id="addPeriodTaskButton" class="secondary-button" type="button">＋ 期間中やる</button><button id="addPlannedTaskButton" class="primary-button" type="button">＋ この日にやる</button></div></div>
             <div class="home-progress-head"><div><span>今日の進捗</span><strong id="homeProgressText">0 / 0</strong></div><strong id="homeProgressPercent">0%</strong></div>
             <div class="linear-progress"><div id="homeProgressFill" class="linear-progress-fill"></div></div>
+            <section class="home-quick-task-section" aria-labelledby="homeQuickTaskHeading">
+              <div class="home-now-section-heading"><h4 id="homeQuickTaskHeading">軽量タスク</h4><strong id="homeQuickTaskCount">0</strong></div>
+              <form id="homeQuickTaskForm" class="home-quick-task-form" autocomplete="off">
+                <input id="homeQuickTaskInput" name="quick_item_text" type="text" placeholder="すぐやること" autocomplete="off">
+                <button id="homeQuickTaskAddButton" class="primary-button" type="submit">追加</button>
+              </form>
+              <div id="homeQuickTaskList" class="home-quick-task-list"></div>
+            </section>
             <section class="home-now-section" aria-labelledby="homeTaskHeading"><h4 id="homeTaskHeading">タスク</h4><div id="nowTaskList" class="now-task-list"></div></section>
           </section>
           <div class="home-dashboard-side">
@@ -420,6 +430,19 @@
       <button id="helpRestartGoalTutorialButton" class="secondary-button" type="button">目標設計チュートリアルをもう一度見る</button>
       <button id="helpRestartDopaTutorialButton" class="secondary-button hidden" type="button">DOPAチュートリアルをもう一度見る</button>
     </div>
+    <section class="shortcut-help" aria-labelledby="shortcutHelpTitle">
+      <h3 id="shortcutHelpTitle">ショートカット</h3>
+      <dl>
+        <div><dt><kbd>N</kbd></dt><dd>新規タスク</dd></div>
+        <div><dt><kbd>Q</kbd></dt><dd>軽量タスク</dd></div>
+        <div><dt><kbd>/</kbd></dt><dd>検索</dd></div>
+        <div><dt><kbd>?</kbd></dt><dd>ヘルプ</dd></div>
+        <div><dt><kbd>Ctrl</kbd> + <kbd>Z</kbd></dt><dd>Undo</dd></div>
+        <div><dt><kbd>Ctrl</kbd> + <kbd>Y</kbd> / <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>Z</kbd></dt><dd>Redo</dd></div>
+        <div><dt><kbd>Esc</kbd></dt><dd>閉じる</dd></div>
+        <div><dt><kbd>Ctrl</kbd> + <kbd>Enter</kbd></dt><dd>保存</dd></div>
+      </dl>
+    </section>
   </div></div>
 
   <div id="cardModal" class="modal hidden"><div class="modal-backdrop" data-close="cardModal"></div><div class="modal-card">
@@ -557,6 +580,7 @@
   <script src="script.js"></script>
   <script src="tutorial-copy.js"></script>
   <script src="ux-v2.js"></script>
+  <script src="phase2.js"></script>
   <script src="cloud-sync.js"></script>
   <script>if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js'));}</script>
 </body>
