@@ -18,7 +18,7 @@
 
   function captureLocation(){return{view:data.view,selectedBoardId:data.selectedBoardId,selectedGoalId:data.selectedGoalId,selectedFreePageId:data.selectedFreePageId,selectedQuickMemoId:data.selectedQuickMemoId,selectedRoutineCalendarId:data.selectedRoutineCalendarId,selectedDate,calendarCursor:calCursor.getTime()}}
   function sameLocation(a,b){return a&&b&&a.view===b.view&&a.selectedBoardId===b.selectedBoardId&&a.selectedGoalId===b.selectedGoalId&&a.selectedFreePageId===b.selectedFreePageId&&a.selectedQuickMemoId===b.selectedQuickMemoId&&a.selectedRoutineCalendarId===b.selectedRoutineCalendarId&&a.selectedDate===b.selectedDate&&a.calendarCursor===b.calendarCursor}
-  function placeBackButton(){const button=get("appBackButton"),view=E[data.view+"View"];if(view&&button.parentElement!==view)view.insertBefore(button,view.firstChild);button.classList.toggle("hidden",!previousLocation)}
+  function placeBackButton(){get("appBackButton").classList.toggle("hidden",!previousLocation)}
   const baseShow=show,baseShowTransient=showTransient;
   function transition(base,view){const before=activeLocation||captureLocation(),result=base(view==="todayTasks"?"home":view),after=captureLocation();if(!sameLocation(before,after))previousLocation=before;activeLocation=after;placeBackButton();return result}
   show=function(view){const result=transition(baseShow,view);if(view==="builder")setTimeout(maybeOpenGoalTutorial,80);return result};
@@ -102,7 +102,11 @@
   const baseRenderCard=renderCard;
   renderCard=function(card,sectionId){
     const el=baseRenderCard(card,sectionId),foot=el.querySelector(".card-footer");el.style.setProperty("--card-user-color",cardColors[card.color]||cardColors.white);
-    const info=document.createElement("div");info.className="card-info";el.querySelectorAll(":scope > .meta-row, :scope > .tag-row").forEach(row=>info.appendChild(row));el.insertBefore(info,foot);
+    const info=document.createElement("div");info.className="card-info";el.querySelectorAll(":scope > .meta-row, :scope > .tag-row").forEach(row=>info.appendChild(row));
+    let meta=info.querySelector(".meta-row");if(card.plannedDate){if(!meta){meta=document.createElement("div");meta.className="meta-row";info.prepend(meta)}const planned=document.createElement("span");planned.className="due-chip planned-chip";planned.textContent=`${card.plannedDate.slice(5).replace("-","/")}予定`;meta.prepend(planned)}
+    const tags=info.querySelectorAll(".tag-row .tag-chip");if(tags.length>2){[...tags].slice(2).forEach(tag=>tag.remove());const more=document.createElement("span");more.className="tag-chip tag-more-chip";more.textContent=`+${tags.length-2}`;info.querySelector(".tag-row").appendChild(more)}
+    const edit=[...foot.querySelectorAll("button")].find(button=>!button.classList.contains("pin-card-button")&&!button.classList.contains("delete-card")),del=foot.querySelector(".delete-card");if(edit&&del){const menu=document.createElement("details");menu.className="card-actions-menu";const summary=document.createElement("summary");summary.textContent="…";summary.setAttribute("aria-label","カードのその他の操作");const panel=document.createElement("div");panel.className="card-actions-menu-panel";panel.append(edit,del);menu.append(summary,panel);foot.appendChild(menu)}
+    foot.onclick=event=>event.stopPropagation();el.onclick=event=>{if(event.target.closest("button,input,a,details,summary,img"))return;openCardModal(card.id)};el.insertBefore(info,foot);
     return el
   };
 
@@ -180,10 +184,12 @@
 
   function tutorialSteps(){return tutorialMode==="dopa"?(window.DOPA_TUTORIAL_STEPS||[]):tutorialMode==="goal"?(window.GOAL_TUTORIAL_STEPS||[]):(window.TUTORIAL_STEPS||[])}
   function renderTutorial(){const steps=tutorialSteps(),step=steps[tutorialIndex];if(!step)return;const modal=get("tutorialModal");modal.classList.toggle("dopa-tutorial",tutorialMode==="dopa");modal.classList.toggle("dopa-tutorial-finale",tutorialMode==="dopa"&&tutorialIndex===steps.length-1&&step.title==="NO DOPAMINE, NO LIFE.");modal.dataset.target=step.target||"";get("tutorialStepLabel").textContent=`${tutorialIndex+1} / ${steps.length}`;get("tutorialIcon").textContent=step.icon;get("tutorialTitle").textContent=step.title;get("tutorialBody").textContent=step.body;get("tutorialProgress").innerHTML=steps.map((_,i)=>`<i class="${i===tutorialIndex?"active":""}"></i>`).join("");get("tutorialPrevButton").disabled=tutorialIndex===0;get("tutorialNextButton").textContent=tutorialIndex===steps.length-1?"完了":"次へ"}
-  function openTutorial(mode){if(!get("tutorialModal").classList.contains("hidden"))return;tutorialMode=mode;tutorialIndex=0;renderTutorial();get("tutorialModal").classList.remove("hidden")}
+  function openTutorial(mode){if(!get("tutorialModal").classList.contains("hidden")||!get("helpModal").classList.contains("hidden"))return;tutorialMode=mode;tutorialIndex=0;renderTutorial();get("tutorialModal").classList.remove("hidden")}
+  function openHelp(){get("helpRestartDopaTutorialButton").classList.toggle("hidden",!data.settings.dopaUnlocked);get("helpModal").classList.remove("hidden")}
   function maybeOpenGoalTutorial(){if(!uxReady||data.view!=="builder"||data.settings.theme==="dopaboy"||data.settings.goalTutorialCompleted||!get("tutorialModal").classList.contains("hidden"))return;openTutorial("goal")}
   function finishTutorial(){if(tutorialMode==="dopa")data.settings.dopaTutorialCompleted=true;else if(tutorialMode==="goal")data.settings.goalTutorialCompleted=true;else data.settings.tutorialCompleted=true;save();get("tutorialModal").classList.add("hidden");if(tutorialMode==="normal"&&data.settings.theme==="dopaboy"&&!data.settings.dopaTutorialCompleted)setTimeout(()=>openTutorial("dopa"),120);else if(tutorialMode==="normal")setTimeout(maybeOpenGoalTutorial,120)}
   get("tutorialPrevButton").onclick=()=>{if(tutorialIndex>0){tutorialIndex--;renderTutorial()}};get("tutorialNextButton").onclick=()=>{if(tutorialIndex<tutorialSteps().length-1){tutorialIndex++;renderTutorial()}else finishTutorial()};get("tutorialSkipButton").onclick=finishTutorial;get("restartTutorialButton").onclick=()=>{closeModal("settingsModal");openTutorial("normal")};get("restartGoalTutorialButton").onclick=()=>{closeModal("settingsModal");openTutorial("goal")};get("restartDopaTutorialButton").onclick=()=>{closeModal("settingsModal");openTutorial("dopa")};
+  get("helpButton").onclick=openHelp;get("helpRestartTutorialButton").onclick=()=>{closeModal("helpModal");openTutorial("normal")};get("helpRestartGoalTutorialButton").onclick=()=>{closeModal("helpModal");openTutorial("goal")};get("helpRestartDopaTutorialButton").onclick=()=>{closeModal("helpModal");openTutorial("dopa")};document.addEventListener("keydown",event=>{if(event.key==="Escape")closeModal("helpModal")});
 
   uxReady=true;applyTheme();renderAll();renderFreeboard();activeLocation=captureLocation();placeBackButton();
   setTimeout(()=>{if(!data.settings.tutorialCompleted)openTutorial("normal");else if(data.settings.theme==="dopaboy"&&!data.settings.dopaTutorialCompleted)openTutorial("dopa");else maybeOpenGoalTutorial()},180)

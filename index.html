@@ -64,38 +64,35 @@
         <button id="templatesButton" class="nav-button" data-nav-key="templates">🧩 テンプレート</button>
         <button id="freeboardButton" class="nav-button" data-nav-key="freeboard">🗒 自由帳</button>
         <button id="memoButton" class="nav-button" data-nav-key="memo">📝 メモ</button>
+        <button id="boardsButton" class="nav-button" data-nav-key="boards">📁 ボード</button>
         <button id="builderButton" class="nav-button" data-nav-key="builder">🧭 目標設計</button>
         <button id="achievedGoalsButton" class="nav-button" data-nav-key="achievedGoals">🏆 達成した目標</button>
         <button id="trashButton" class="nav-button" data-nav-key="trash">🗑 ゴミ箱</button>
       </nav>
-      <div class="sidebar-global-search">
-        <button id="globalSearchButton" class="sidebar-search-button sidebar-search-icon-button" type="button" aria-expanded="false" aria-controls="sidebarGlobalSearchPanel" aria-label="全体検索を開く" title="全体検索">🔍</button>
-        <div id="sidebarGlobalSearchPanel" class="sidebar-global-search-panel hidden">
-          <form class="app-search-form sidebar-global-search-form" role="search" aria-label="アプリ全体検索" autocomplete="off">
-            <input id="sidebarGlobalSearchInput" name="workspace_sidebar_query" type="search" placeholder="アプリ全体を検索" autocomplete="off" autocapitalize="none" spellcheck="false">
-            <button id="sidebarGlobalSearchClose" class="sidebar-global-search-close" type="button" aria-label="全体検索を閉じる">×</button>
-          </form>
-          <p id="sidebarGlobalSearchSummary" class="sidebar-global-search-summary">検索語を入力してください。</p>
-          <div id="sidebarGlobalSearchResults" class="sidebar-global-search-results"></div>
-        </div>
-      </div>
       <details id="hiddenNavDrawer" class="hidden-nav-drawer hidden">
         <summary>隠したタブ <span id="hiddenNavCount">0</span></summary>
         <nav id="hiddenNavList" class="hidden-nav-list"></nav>
       </details>
-
-      <div class="sidebar-divider"></div>
-      <div class="sidebar-board-heading"><span class="sidebar-label">ボード</span><button id="addBoardButton" class="sidebar-board-add" type="button" title="新しいボード" aria-label="新しいボード">＋</button></div>
-      <div id="boardCreatePanel" class="compact-create-panel sidebar-board-create hidden">
-        <input id="boardNameInput" placeholder="ボード名" autocomplete="off">
-        <button id="confirmBoardCreateButton" class="primary-button" type="button">作成</button>
-        <button id="cancelBoardCreateButton" class="secondary-button" type="button">キャンセル</button>
-      </div>
-      <nav id="boardList" class="board-list"></nav>
     </aside>
 
     <main class="main-content">
-      <button id="appBackButton" class="app-back-button hidden" type="button" aria-label="直前の画面に戻る">← 一個戻る</button>
+      <div class="utility-bar" aria-label="ユーティリティ">
+        <button id="appBackButton" class="app-back-button hidden" type="button" aria-label="直前の画面に戻る">← 一個戻る</button>
+        <span class="utility-spacer"></span>
+        <div class="sidebar-global-search utility-search">
+          <button id="globalSearchButton" class="sidebar-search-button sidebar-search-icon-button utility-icon-button" type="button" aria-expanded="false" aria-controls="sidebarGlobalSearchPanel" aria-label="全体検索を開く" title="全体検索">🔍</button>
+          <div id="sidebarGlobalSearchPanel" class="sidebar-global-search-panel hidden">
+            <form class="app-search-form sidebar-global-search-form" role="search" aria-label="アプリ全体検索" autocomplete="off">
+              <input id="sidebarGlobalSearchInput" name="workspace_sidebar_query" type="search" placeholder="アプリ全体を検索" autocomplete="off" autocapitalize="none" spellcheck="false">
+              <button id="sidebarGlobalSearchClose" class="sidebar-global-search-close" type="button" aria-label="全体検索を閉じる">×</button>
+            </form>
+            <p id="sidebarGlobalSearchSummary" class="sidebar-global-search-summary">検索語を入力してください。</p>
+            <div id="sidebarGlobalSearchResults" class="sidebar-global-search-results"></div>
+          </div>
+        </div>
+        <button id="helpButton" class="utility-icon-button" type="button" aria-label="ヘルプ" title="ヘルプ">?</button>
+        <button id="utilityAddButton" class="utility-icon-button utility-add-button" type="button" aria-label="新規タスク" title="新規タスク">＋</button>
+      </div>
       <section id="todayTasksView" class="view hidden">
         <header class="page-header">
           <div><p id="todayEyebrow" class="eyebrow">TODAY</p><h2>今日やること</h2><p id="todayHelper" class="page-helper">今日のタスクを確認。</p></div>
@@ -193,27 +190,31 @@
         <header class="page-header">
           <div><p class="eyebrow">DASHBOARD</p><h2>ホーム</h2><p id="homeHelper" class="page-helper">今やることと全体の状況を確認。</p></div>
         </header>
-        <section class="panel now-tasks-panel">
-          <div class="panel-heading now-tasks-heading"><div><h3>今やること</h3><p>期間中のタスクと、指定日にやるタスクをまとめて確認。</p></div><div class="header-actions"><button id="addPeriodTaskButton" class="secondary-button" type="button">＋ 期間中やる</button><button id="addPlannedTaskButton" class="primary-button" type="button">＋ この日にやる</button></div></div>
-          <div class="home-progress-head"><div><span>今日の進捗</span><strong id="homeProgressText">0 / 0</strong></div><strong id="homeProgressPercent">0%</strong></div>
-          <div class="linear-progress"><div id="homeProgressFill" class="linear-progress-fill"></div></div>
-          <section class="home-now-section" aria-labelledby="homeTaskHeading"><h4 id="homeTaskHeading">タスク</h4><div id="nowTaskList" class="now-task-list"></div></section>
-          <section class="home-now-section home-routine-section" aria-labelledby="homeRoutineHeading">
-            <div class="home-now-section-heading"><h4 id="homeRoutineHeading">今日のルーティン</h4><strong id="homeRoutineCount">0 / 0</strong></div>
-            <div id="homeRoutineList" class="home-routine-list"></div>
-          </section>
-        </section>
         <div class="summary-grid">
           <article class="summary-card"><span>未完了</span><strong id="openTaskCount">0</strong></article>
           <article class="summary-card"><span>今やること</span><strong id="todayTaskCount">0</strong></article>
           <article class="summary-card"><span>期限切れ</span><strong id="overdueCount">0</strong></article>
           <article class="summary-card"><span>今月完了</span><strong id="monthlyDoneCount">0</strong></article>
         </div>
-        <div class="home-two-column">
-          <section class="panel"><div class="panel-heading"><h3>📌 ピン留め</h3></div><div id="pinnedList" class="list-stack"></div></section>
-          <section class="panel"><div class="panel-heading"><h3>🕘 最近触ったもの</h3><button id="clearRecentButton" class="text-button">履歴を消す</button></div><div id="recentList" class="list-stack"></div></section>
+        <div class="home-dashboard-grid">
+          <section class="panel now-tasks-panel">
+            <div class="panel-heading now-tasks-heading"><div><h3>今やること</h3><p>期間中のタスクと、指定日にやるタスクをまとめて確認。</p></div><div class="header-actions"><button id="addPeriodTaskButton" class="secondary-button" type="button">＋ 期間中やる</button><button id="addPlannedTaskButton" class="primary-button" type="button">＋ この日にやる</button></div></div>
+            <div class="home-progress-head"><div><span>今日の進捗</span><strong id="homeProgressText">0 / 0</strong></div><strong id="homeProgressPercent">0%</strong></div>
+            <div class="linear-progress"><div id="homeProgressFill" class="linear-progress-fill"></div></div>
+            <section class="home-now-section" aria-labelledby="homeTaskHeading"><h4 id="homeTaskHeading">タスク</h4><div id="nowTaskList" class="now-task-list"></div></section>
+          </section>
+          <div class="home-dashboard-side">
+            <section class="panel home-routine-panel" aria-labelledby="homeRoutineHeading">
+              <div class="home-now-section-heading"><h4 id="homeRoutineHeading">今日のルーティン</h4><strong id="homeRoutineCount">0 / 0</strong></div>
+              <div id="homeRoutineList" class="home-routine-list"></div>
+            </section>
+            <section class="panel"><div class="panel-heading"><h3>📌 ピン留め</h3></div><div id="pinnedList" class="list-stack"></div></section>
+          </div>
         </div>
-        <section class="panel"><h3>期限が近いタスク</h3><div id="upcomingList" class="list-stack"></div></section>
+        <div class="home-two-column home-support-grid">
+          <section class="panel"><div class="panel-heading"><h3>🕘 最近触ったもの</h3><button id="clearRecentButton" class="text-button">履歴を消す</button></div><div id="recentList" class="list-stack"></div></section>
+          <section class="panel"><h3>期限が近いタスク</h3><div id="upcomingList" class="list-stack"></div></section>
+        </div>
       </section>
 
 
@@ -242,17 +243,34 @@
           </section>
         </div>
       </section>
+      <section id="boardsView" class="view hidden">
+        <header class="page-header">
+          <div><p class="eyebrow">BOARDS</p><h2>ボード</h2></div>
+          <div class="header-actions"><button id="addBoardButton" class="primary-button" type="button">＋ ボード</button></div>
+        </header>
+        <div id="boardCreatePanel" class="compact-create-panel board-overview-create hidden">
+          <input id="boardNameInput" placeholder="ボード名" autocomplete="off">
+          <button id="confirmBoardCreateButton" class="primary-button" type="button">作成</button>
+          <button id="cancelBoardCreateButton" class="secondary-button" type="button">キャンセル</button>
+        </div>
+        <nav id="boardList" class="board-overview-list" aria-label="ボード一覧"></nav>
+      </section>
 
       <section id="boardView" class="view">
         <header class="page-header board-header">
           <div><p class="eyebrow">CURRENT BOARD</p><h2 id="currentBoardTitle" contenteditable="true">ボード名</h2></div>
-          <div class="header-actions">
-            <button id="pinBoardButton" class="secondary-button">☆ ボードをピン</button>
-            <button id="saveBoardTemplateButton" class="secondary-button">🧩 型を保存</button>
-            <button id="addSectionButton" class="secondary-button">＋ 小項目</button>
+          <div class="header-actions board-primary-actions">
             <button id="addCardButton" class="primary-button">＋ カード</button>
             <button id="completeSelectedButton" class="success-button hidden">選択したタスクを完了</button>
-            <button id="deleteBoardButton" class="danger-outline-button">削除</button>
+            <details class="board-actions-menu">
+              <summary class="secondary-button" aria-label="ボードのその他の操作">…</summary>
+              <div class="board-actions-menu-panel">
+                <button id="pinBoardButton" class="secondary-button">☆ ボードをピン</button>
+                <button id="saveBoardTemplateButton" class="secondary-button">🧩 型を保存</button>
+                <button id="addSectionButton" class="secondary-button">＋ 小項目</button>
+                <button id="deleteBoardButton" class="danger-outline-button">削除</button>
+              </div>
+            </details>
           </div>
         </header>
         <form class="toolbar app-search-form board-filter-toolbar" role="search" aria-label="カード検索" autocomplete="off">
@@ -393,6 +411,15 @@
     </form>
     <p id="globalSearchSummary" class="global-search-summary">検索語を入力してください。</p>
     <div id="globalSearchResults" class="global-search-results"></div>
+  </div></div>
+
+  <div id="helpModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="helpModalTitle"><div class="modal-backdrop" data-close="helpModal"></div><div class="modal-card help-modal-card">
+    <div class="modal-header"><h2 id="helpModalTitle">ヘルプ</h2><button class="close-button" data-close="helpModal">×</button></div>
+    <div class="help-tutorial-actions">
+      <button id="helpRestartTutorialButton" class="secondary-button" type="button">チュートリアルをもう一度見る</button>
+      <button id="helpRestartGoalTutorialButton" class="secondary-button" type="button">目標設計チュートリアルをもう一度見る</button>
+      <button id="helpRestartDopaTutorialButton" class="secondary-button hidden" type="button">DOPAチュートリアルをもう一度見る</button>
+    </div>
   </div></div>
 
   <div id="cardModal" class="modal hidden"><div class="modal-backdrop" data-close="cardModal"></div><div class="modal-card">
