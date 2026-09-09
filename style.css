@@ -7021,6 +7021,7 @@ body[data-utility-bar-mode="hidden"] .utility-bar{display:none}
 }
 @media(max-width:820px){body[data-utility-bar-mode="desktop"] .utility-bar{display:none}}
 #quickAddMenu.utility-origin{top:var(--menu-top)!important;right:var(--menu-right)!important;bottom:auto!important;left:auto!important}
+#quickAddMenu.board-task-origin [data-quick-action]:not([data-quick-action="task"]):not([data-quick-action="light"]){display:none}
 .utility-visibility-settings{display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;margin-top:8px}
 
 .board-overview-list{margin-bottom:var(--space-lg)}

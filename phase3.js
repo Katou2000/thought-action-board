@@ -29,10 +29,10 @@
     get(id).onchange=event=>{data.settings[key]=event.target.checked;save();applyUtilitySettings()}
   });
 
-  function closeCreateMenu(){const menu=get("quickAddMenu");menu.classList.add("hidden");menu.classList.remove("utility-origin");menu.style.removeProperty("--menu-top");menu.style.removeProperty("--menu-right");createContext={}}
+  function closeCreateMenu(){const menu=get("quickAddMenu");menu.classList.add("hidden");menu.classList.remove("utility-origin","board-task-origin");menu.style.removeProperty("--menu-top");menu.style.removeProperty("--menu-right");createContext={}}
   function openCreateMenu(origin,event,context={}){
     event?.stopPropagation();const menu=get("quickAddMenu"),opening=menu.classList.contains("hidden")||menu.dataset.origin!==origin;
-    closeCreateMenu();if(!opening)return;menu.dataset.origin=origin;createContext={...context};
+    closeCreateMenu();if(!opening)return;menu.dataset.origin=origin;createContext={...context};menu.classList.toggle("board-task-origin",context.taskOnly===true);
     const anchor=event?.currentTarget||(origin==="utility"?get("utilityAddButton"):null);menu.classList.remove("hidden");
     if(anchor&&origin!=="fab"){const rect=anchor.getBoundingClientRect();menu.classList.add("utility-origin");menu.style.setProperty("--menu-top",`${Math.max(12,Math.min(innerHeight-menu.offsetHeight-12,rect.bottom+8))}px`);menu.style.setProperty("--menu-right",`${Math.max(12,innerWidth-rect.right)}px`)}
   }
@@ -85,8 +85,8 @@
     });renderBoardOverviewTasks()
   };
   get("boardOverviewSearch").addEventListener("input",renderBoardOverviewTasks);get("boardOverviewStatus").addEventListener("change",renderBoardOverviewTasks);
-  get("boardCreateTaskButton").onclick=event=>openCreateMenu("boards",event,{source:"boards",boardId:boardFilter==="all"?null:boardFilter,requireBoard:boardFilter==="all"});
-  E.addCardButton.onclick=event=>openCreateMenu("board-detail",event,{source:"board",boardId:data.selectedBoardId});
+  get("boardCreateTaskButton").onclick=event=>openCreateMenu("boards",event,{source:"boards",boardId:boardFilter==="all"?null:boardFilter,requireBoard:boardFilter==="all",taskOnly:true});
+  E.addCardButton.onclick=event=>openCreateMenu("board-detail",event,{source:"board",boardId:data.selectedBoardId,taskOnly:true});
   get("calendarTaskMenuButton").onclick=event=>openCreateMenu("calendar",event,{source:"calendar",plannedDate:selectedDate||localDate()});
 
   function renderBoardLightTasks(){
