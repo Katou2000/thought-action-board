@@ -112,15 +112,20 @@
 
       <section id="routineView" class="view hidden">
         <header class="page-header">
-          <div><p class="eyebrow">ROUTINE</p><h2>ルーティンタスク</h2><p id="routineHelp" class="page-helper">毎日・平日・曜日指定の習慣的なタスクの管理。</p></div>
+          <div><p class="eyebrow">ROUTINE</p><h2>ルーティンタスク</h2><p id="routineHelp" class="page-helper">毎日・平日・曜日指定の習慣的なタスクの管理。</p><p class="routine-boundary-note">ルーティンの日付は午前4時に切り替わります</p></div>
+          <div class="header-actions"><button id="openRoutineCreateButton" class="primary-button" type="button">＋ ルーティン</button></div>
         </header>
+        <section class="panel routine-today-panel">
+          <div class="panel-heading"><h3>今日のルーティン</h3><strong id="routineTodayProgress">0 / 0</strong></div>
+          <div id="routineTodayList" class="routine-today-list"></div>
+        </section>
         <div class="routine-summary-grid">
           <article class="summary-card"><span>今日の対象</span><strong id="routineTodayCount">0</strong></article>
           <article class="summary-card"><span>今日の完了</span><strong id="routineDoneCount">0</strong></article>
           <article class="summary-card"><span>今日達成率</span><strong id="routineProgressPercent">0%</strong></article>
           <article class="summary-card"><span>最長連続</span><strong id="routineStreakMax">0日</strong></article>
         </div>
-        <section class="panel routine-form-panel">
+        <section id="routineCreatePanel" class="panel routine-form-panel hidden">
           <div class="panel-heading"><h3>＋ ルーティンタスク追加</h3><span class="count-badge">毎日の習慣をここで増やす</span></div>
           <div class="routine-form-grid">
             <input id="routineTitleInput" type="text" placeholder="例：IT勉強 10分">
@@ -147,6 +152,10 @@
             <label><input class="routine-weekday-input" type="checkbox" value="6">土</label>
           </div>
         </section>
+        <section class="routine-management-section">
+          <div class="panel-heading"><h3>すべてのルーティン</h3><nav id="routineFilterNav" class="routine-filter-nav" aria-label="ルーティン絞り込み"><button class="active" type="button" data-routine-filter="all">すべて</button><button type="button" data-routine-filter="daily">毎日</button><button type="button" data-routine-filter="weekdays">平日</button><button type="button" data-routine-filter="custom">曜日指定</button><button type="button" data-routine-filter="paused">休止中</button></nav></div>
+          <div id="routineList" class="routine-group-stack"></div>
+        </section>
         <section class="panel routine-calendar-panel">
           <div class="panel-heading routine-calendar-heading">
             <div><h3>📅 月間振り返り</h3><p class="routine-calendar-note">その日に対象だった全ルーティンの達成状況を確認できます。過去日は閲覧専用です。</p></div>
@@ -169,7 +178,6 @@
           <div id="routineCalendarLegend" class="routine-calendar-legend"><span><i class="legend-dot off"></i>対象なし</span><span><i class="legend-dot zero"></i>0件達成</span><span><i class="legend-dot partial"></i>一部達成</span><span><i class="legend-dot done"></i>全達成</span></div>
           <section id="routineDayDetail" class="routine-day-detail" aria-live="polite"></section>
         </section>
-        <div id="routineList" class="routine-group-stack"></div>
       </section>
       <section id="calendarView" class="view hidden">
         <header class="page-header">
@@ -205,10 +213,7 @@
             <div class="linear-progress"><div id="homeProgressFill" class="linear-progress-fill"></div></div>
             <section class="home-quick-task-section" aria-labelledby="homeQuickTaskHeading">
               <div class="home-now-section-heading"><h4 id="homeQuickTaskHeading">軽量タスク</h4><strong id="homeQuickTaskCount">0</strong></div>
-              <form id="homeQuickTaskForm" class="home-quick-task-form" autocomplete="off">
-                <input id="homeQuickTaskInput" name="quick_item_text" type="text" placeholder="すぐやること" autocomplete="off">
-                <button id="homeQuickTaskAddButton" class="primary-button" type="submit">追加</button>
-              </form>
+              <div class="home-quick-task-form"><button id="homeLightTaskButton" class="secondary-button" type="button">＋ 軽量タスク</button></div>
               <div id="homeQuickTaskList" class="home-quick-task-list"></div>
             </section>
             <section class="home-now-section" aria-labelledby="homeTaskHeading"><h4 id="homeTaskHeading">タスク</h4><div id="nowTaskList" class="now-task-list"></div></section>
@@ -264,6 +269,10 @@
           <button id="cancelBoardCreateButton" class="secondary-button" type="button">キャンセル</button>
         </div>
         <nav id="boardList" class="board-overview-list" aria-label="ボード一覧"></nav>
+        <section class="panel board-all-panel">
+          <div class="panel-heading board-all-heading"><h3>未完了タスク</h3><nav id="boardOverviewFilters" class="board-overview-filters" aria-label="ボード別タスク絞り込み"></nav></div>
+          <div id="boardOverviewTaskList" class="board-overview-task-list"></div>
+        </section>
       </section>
 
       <section id="boardView" class="view">
@@ -271,6 +280,7 @@
           <div><p class="eyebrow">CURRENT BOARD</p><h2 id="currentBoardTitle" contenteditable="true">ボード名</h2></div>
           <div class="header-actions board-primary-actions">
             <button id="addCardButton" class="primary-button">＋ カード</button>
+            <button id="addLightTaskButton" class="secondary-button" type="button">＋ 軽量タスク</button>
             <button id="completeSelectedButton" class="success-button hidden">選択したタスクを完了</button>
             <details class="board-actions-menu">
               <summary class="secondary-button" aria-label="ボードのその他の操作">…</summary>
@@ -294,6 +304,7 @@
           <select id="sortSelect"><option value="manual">手動順</option><option value="dueAsc">期限が近い順</option><option value="dueDesc">期限が遠い順</option><option value="createdDesc">新しい順</option><option value="createdAsc">古い順</option></select>
         </form>
         <div id="selectionBar" class="selection-bar hidden"><span id="selectionCountText">0件選択中</span><button id="clearSelectionButton" class="secondary-button">選択解除</button><button id="completeSelectedBarButton" class="success-button">完了にする</button></div>
+        <section id="boardLightTaskPanel" class="panel board-light-task-panel hidden"><div class="panel-heading"><h3>軽量タスク</h3><span id="boardLightTaskCount" class="count-badge">0</span></div><div id="boardLightTaskList" class="board-overview-task-list"></div></section>
         <div id="sectionBoard" class="section-board"></div>
       </section>
 
@@ -391,7 +402,7 @@
   </div>
 
   <button id="quickAddFab" class="quick-add-fab" aria-label="クイック追加">＋</button>
-  <div id="quickAddMenu" class="quick-add-menu hidden"><button data-quick-action="task">✅ タスク</button><button data-quick-action="routine">🔁 ルーティンタスク</button><button data-quick-action="memo">📝 メモ</button><button data-quick-action="free">🗒 付箋</button><button data-quick-action="goal">🧱 目標</button><button data-quick-action="template">🧩 テンプレート</button></div>
+  <div id="quickAddMenu" class="quick-add-menu hidden"><button data-quick-action="task">✅ 通常タスク</button><button data-quick-action="light">☑ 軽量タスク</button><button data-quick-action="routine">🔁 ルーティンタスク</button><button data-quick-action="memo">📝 メモ</button><button data-quick-action="free">🗒 付箋</button><button data-quick-action="goal">🧱 目標</button><button data-quick-action="template">🧩 テンプレート</button></div>
 
   <div id="syncCompact" class="sync-compact">
     <button id="syncCompactButton" class="sync-compact-button" type="button" aria-expanded="false" aria-controls="syncCompactDetail">
@@ -477,6 +488,14 @@
     <div class="modal-actions"><button class="secondary-button" data-close="quickTaskModal">キャンセル</button><button id="saveQuickTaskButton" class="primary-button">追加</button></div>
   </div></div>
 
+  <div id="lightTaskModal" class="modal hidden"><div class="modal-backdrop" data-close="lightTaskModal"></div><div class="modal-card small-modal">
+    <div class="modal-header"><h2>軽量タスクを追加</h2><button class="close-button" data-close="lightTaskModal">×</button></div>
+    <label>タスク名<input id="lightTaskTitleInput" type="text" placeholder="例：ゴミ捨て" autocomplete="off"></label>
+    <label>ボード<select id="lightTaskBoardInput"></select></label>
+    <label>予定日<input id="lightTaskPlannedDateInput" type="date"></label>
+    <div class="modal-actions"><button class="secondary-button" data-close="lightTaskModal">キャンセル</button><button id="saveLightTaskButton" class="primary-button" type="button">追加</button></div>
+  </div></div>
+
   <div id="freeItemModal" class="modal hidden"><div class="modal-backdrop" data-close="freeItemModal"></div><div class="modal-card small-modal">
     <div class="modal-header"><h2 id="freeItemModalTitle">自由帳</h2><button class="close-button" data-close="freeItemModal">×</button></div>
     <div id="freeTextHistoryActions" class="free-text-history-actions"><button id="undoFreeTextButton" class="secondary-button" type="button" aria-label="文字入力を戻す">↶ 戻す</button><button id="redoFreeTextButton" class="secondary-button" type="button" aria-label="文字入力を進める">↷ 進む</button></div>
@@ -527,6 +546,13 @@
         <label class="switch-row"><span>クイック＋ボタンを表示</span><input id="quickAddVisibleToggle" type="checkbox" checked></label>
         <label>＋ボタン位置<select id="quickAddPositionSelect"><option value="auto">自動</option><option value="bottom-right">右下</option><option value="bottom-left">左下</option><option value="top-right">右上</option><option value="top-left">左上</option></select></label>
         <p class="setting-note">自動：左→右下 / 右→左下 / 上→右下 / 下→右上。非表示にしても各画面の追加ボタンは使えます。</p>
+        <label>上部バー<select id="utilityBarModeSelect"><option value="always">常に表示</option><option value="desktop">PCのみ</option><option value="mobile">スマホのみ</option><option value="hidden">非表示</option></select></label>
+        <div class="utility-visibility-settings" aria-label="上部バーの表示項目">
+          <label class="switch-row"><span>検索</span><input id="utilitySearchToggle" type="checkbox" checked></label>
+          <label class="switch-row"><span>Undo / Redo</span><input id="utilityHistoryToggle" type="checkbox" checked></label>
+          <label class="switch-row"><span>ヘルプ</span><input id="utilityHelpToggle" type="checkbox" checked></label>
+          <label class="switch-row"><span>追加</span><input id="utilityAddToggle" type="checkbox" checked></label>
+        </div>
         <label class="switch-row"><span>タブ並び替えモード</span><input id="sidebarEditToggle" type="checkbox"></label>
         <p class="setting-note">サイドバー上で直接ドラッグする場合に使います。設定一覧は専用ハンドルでいつでも並び替えできます。</p>
         <div class="nav-visibility-box"><strong>タブ表示・並び順</strong><p class="setting-note">⋮⋮をドラッグ。OFFは「隠したタブ」へ移動し、小さな↑↓も補助操作として使えます。</p><div id="navVisibilityList" class="nav-visibility-list"></div></div>
@@ -581,6 +607,7 @@
   <script src="tutorial-copy.js"></script>
   <script src="ux-v2.js"></script>
   <script src="phase2.js"></script>
+  <script src="phase3.js"></script>
   <script src="cloud-sync.js"></script>
   <script>if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js'));}</script>
 </body>

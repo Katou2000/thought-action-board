@@ -63,34 +63,42 @@
     const cutoff=Date.now()-14*86400000;
     data.quickTaskLog=data.quickTaskLog.filter(item=>Date.parse(item.completedAt)>=cutoff)
   }
+  function openLightTask(defaultBoardId=data.selectedBoardId){
+    const boardSelect=get("lightTaskBoardInput");
+    boardSelect.innerHTML=data.boards.map(board=>`<option value="${board.id}">${esc(board.name)}</option>`).join("");
+    boardSelect.value=data.boards.some(board=>board.id===defaultBoardId)?defaultBoardId:data.boards[0]?.id||"";
+    get("lightTaskTitleInput").value="";get("lightTaskPlannedDateInput").value=localDate();
+    get("lightTaskModal").classList.remove("hidden");setTimeout(()=>get("lightTaskTitleInput").focus(),20)
+  }
   function addQuickTask(){
-    const input=get("homeQuickTaskInput"),title=input.value.trim();if(!title)return;
+    const title=get("lightTaskTitleInput").value.trim(),boardId=get("lightTaskBoardInput").value,plannedDate=get("lightTaskPlannedDateInput").value;if(!title||!boardId||!plannedDate)return;
     const before=snapshot(QUICK_KEYS);
-    data.quickTasks.unshift({id:uid(),title,createdAt:Date.now(),completed:false});
-    input.value="";save();pushHistory("軽量タスクを追加",QUICK_KEYS,before);renderQuickTasks();input.focus()
+    data.quickTasks.unshift({id:uid(),title,boardId,plannedDate,createdAt:Date.now(),completed:false});
+    save();pushHistory("軽量タスクを追加",QUICK_KEYS,before);closeModal("lightTaskModal");renderAll()
   }
   function completeQuickTask(id){
     const item=data.quickTasks.find(task=>task.id===id);if(!item)return;
     const before=snapshot(QUICK_KEYS);
     data.quickTasks=data.quickTasks.filter(task=>task.id!==id);
-    data.quickTaskLog.unshift({id:item.id,title:item.title,completedAt:new Date().toISOString()});pruneQuickTaskLog();
-    save();pushHistory("軽量タスクを完了",QUICK_KEYS,before);renderQuickTasks();standardAction("軽量タスク完了",item.title,"complete")
+    data.quickTaskLog.unshift({id:item.id,title:item.title,boardId:item.boardId,plannedDate:item.plannedDate,completedAt:new Date().toISOString()});pruneQuickTaskLog();
+    save();pushHistory("軽量タスクを完了",QUICK_KEYS,before);renderAll();standardAction("軽量タスク完了",item.title,"complete")
   }
   function deleteQuickTask(id){
     const item=data.quickTasks.find(task=>task.id===id);if(!item)return;
     const before=snapshot(QUICK_KEYS);data.quickTasks=data.quickTasks.filter(task=>task.id!==id);
-    save();pushHistory("軽量タスクを削除",QUICK_KEYS,before);renderQuickTasks()
+    save();pushHistory("軽量タスクを削除",QUICK_KEYS,before);renderAll()
   }
   function renderQuickTasks(){
     const list=get("homeQuickTaskList"),count=get("homeQuickTaskCount");if(!list||!count)return;
-    count.textContent=String(data.quickTasks.length);list.innerHTML="";
-    data.quickTasks.forEach(task=>{
+    const visible=data.quickTasks.filter(task=>!task.completed).sort((a,b)=>a.plannedDate.localeCompare(b.plannedDate)||a.createdAt-b.createdAt);
+    count.textContent=String(visible.length);list.innerHTML="";
+    visible.forEach(task=>{
       const row=document.createElement("div");row.className="home-quick-task-item";
       const done=document.createElement("button");done.type="button";done.className="quick-task-check";done.setAttribute("aria-label",`${task.title}を完了`);done.textContent="□";done.onclick=()=>completeQuickTask(task.id);
-      const title=document.createElement("span");title.textContent=task.title;
+      const title=document.createElement("span"),boardName=data.boards.find(board=>board.id===task.boardId)?.name||"ボードなし";title.innerHTML=`<strong>${esc(task.title)}</strong><small>${esc(boardName)} / ${esc(task.plannedDate.slice(5).replace("-","/"))}予定</small>`;
       const remove=document.createElement("button");remove.type="button";remove.className="quick-task-delete";remove.setAttribute("aria-label",`${task.title}を削除`);remove.textContent="×";remove.onclick=()=>deleteQuickTask(task.id);
       row.append(done,title,remove);list.appendChild(row)
-    })
+    });if(!visible.length)list.innerHTML='<div class="now-task-empty"><strong>軽量タスクはありません</strong></div>'
   }
 
   const baseRenderHome=renderHome;
@@ -143,16 +151,19 @@
   wrapClick(E.pinQuickMemoButton,"メモのピンを変更",["quickMemos","recent"]);
   wrapClick(E.pinGoalButton,"目標のピンを変更",GOAL_KEYS);
 
-  get("homeQuickTaskForm").onsubmit=event=>{event.preventDefault();addQuickTask()};
+  get("homeLightTaskButton").onclick=()=>openLightTask();get("saveLightTaskButton").onclick=addQuickTask;
+  get("lightTaskTitleInput").onkeydown=event=>{if(event.key==="Enter")addQuickTask()};
+  window.openLightTask=openLightTask;window.completeLightTask=completeQuickTask;window.deleteLightTask=deleteQuickTask;
+  window.taskKanrinnerHistory={snapshot,pushHistory};
   get("undoButton").onclick=undoHistory;get("redoButton").onclick=redoHistory;
 
   function typingTarget(target){return!!target.closest("input, textarea, select, [contenteditable='true']")}
   function closePanels(){
-    ["cardModal","quickTaskModal","freeItemModal","routineModal","settingsModal","helpModal","globalSearchModal"].forEach(closeModal);
+    ["cardModal","quickTaskModal","lightTaskModal","freeItemModal","routineModal","settingsModal","helpModal","globalSearchModal"].forEach(closeModal);
     get("sidebarGlobalSearchClose")?.click();document.querySelectorAll("details[open]").forEach(details=>details.open=false);closeSide()
   }
   function saveVisibleEditor(){
-    const candidates=[["cardModal","saveCardButton"],["quickTaskModal","saveQuickTaskButton"],["routineModal","saveRoutineModalButton"],["freeItemModal","saveFreeItemModalButton"]];
+    const candidates=[["cardModal","saveCardButton"],["quickTaskModal","saveQuickTaskButton"],["lightTaskModal","saveLightTaskButton"],["routineModal","saveRoutineModalButton"],["freeItemModal","saveFreeItemModalButton"]];
     const item=candidates.find(([modal])=>!get(modal).classList.contains("hidden"));if(item)get(item[1]).click()
   }
   document.addEventListener("keydown",event=>{
@@ -163,7 +174,7 @@
     if(command&&key==="y"){event.preventDefault();redoHistory();return}
     if(event.ctrlKey||event.metaKey||event.altKey)return;
     if(key==="n"){event.preventDefault();openCardModal(null,data.selectedBoardId);return}
-    if(key==="q"){event.preventDefault();show("home");setTimeout(()=>get("homeQuickTaskInput").focus(),20);return}
+    if(key==="q"){event.preventDefault();openLightTask();return}
     if(event.key==="?"||(event.key==="/"&&event.shiftKey)){event.preventDefault();get("helpButton").click();return}
     if(event.key==="/"){event.preventDefault();E.globalSearchButton.click();return}
     if(event.key==="Escape")closePanels()
