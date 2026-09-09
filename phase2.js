@@ -63,11 +63,11 @@
     const cutoff=Date.now()-14*86400000;
     data.quickTaskLog=data.quickTaskLog.filter(item=>Date.parse(item.completedAt)>=cutoff)
   }
-  function openLightTask(defaultBoardId=data.selectedBoardId){
+  function openLightTask(defaultBoardId=data.selectedBoardId,plannedDate=localDate(),requireBoard=false){
     const boardSelect=get("lightTaskBoardInput");
-    boardSelect.innerHTML=data.boards.map(board=>`<option value="${board.id}">${esc(board.name)}</option>`).join("");
-    boardSelect.value=data.boards.some(board=>board.id===defaultBoardId)?defaultBoardId:data.boards[0]?.id||"";
-    get("lightTaskTitleInput").value="";get("lightTaskPlannedDateInput").value=localDate();
+    boardSelect.innerHTML=(requireBoard?'<option value="">ボードを選択</option>':"")+data.boards.map(board=>`<option value="${board.id}">${esc(board.name)}</option>`).join("");
+    boardSelect.value=requireBoard?"":data.boards.some(board=>board.id===defaultBoardId)?defaultBoardId:data.boards[0]?.id||"";
+    get("lightTaskTitleInput").value="";get("lightTaskPlannedDateInput").value=plannedDate||localDate();
     get("lightTaskModal").classList.remove("hidden");setTimeout(()=>get("lightTaskTitleInput").focus(),20)
   }
   function addQuickTask(){
@@ -151,7 +151,7 @@
   wrapClick(E.pinQuickMemoButton,"メモのピンを変更",["quickMemos","recent"]);
   wrapClick(E.pinGoalButton,"目標のピンを変更",GOAL_KEYS);
 
-  get("homeLightTaskButton").onclick=()=>openLightTask();get("saveLightTaskButton").onclick=addQuickTask;
+  get("saveLightTaskButton").onclick=addQuickTask;
   get("lightTaskTitleInput").onkeydown=event=>{if(event.key==="Enter")addQuickTask()};
   window.openLightTask=openLightTask;window.completeLightTask=completeQuickTask;window.deleteLightTask=deleteQuickTask;
   window.taskKanrinnerHistory={snapshot,pushHistory};

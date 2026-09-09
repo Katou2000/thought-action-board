@@ -126,7 +126,7 @@
           <article class="summary-card"><span>最長連続</span><strong id="routineStreakMax">0日</strong></article>
         </div>
         <section id="routineCreatePanel" class="panel routine-form-panel hidden">
-          <div class="panel-heading"><h3>＋ ルーティンタスク追加</h3><span class="count-badge">毎日の習慣をここで増やす</span></div>
+          <div class="panel-heading"><div><h3>＋ ルーティンタスク追加</h3><span class="count-badge">毎日の習慣をここで増やす</span></div><button id="closeRoutineCreateButton" class="close-button" type="button" aria-label="ルーティンタスク追加を閉じる">×</button></div>
           <div class="routine-form-grid">
             <input id="routineTitleInput" type="text" placeholder="例：IT勉強 10分">
             <select id="routineRuleInput">
@@ -182,6 +182,7 @@
       <section id="calendarView" class="view hidden">
         <header class="page-header">
           <div><p class="eyebrow">CALENDAR</p><h2>カレンダー</h2><p id="calendarHelper" class="page-helper">予定日・期間・期限を日付で確認。</p></div>
+          <div class="header-actions"><button id="calendarTaskMenuButton" class="primary-button" type="button">＋ タスク</button></div>
         </header>
         <section class="panel calendar-panel">
           <div class="calendar-toolbar">
@@ -213,7 +214,6 @@
             <div class="linear-progress"><div id="homeProgressFill" class="linear-progress-fill"></div></div>
             <section class="home-quick-task-section" aria-labelledby="homeQuickTaskHeading">
               <div class="home-now-section-heading"><h4 id="homeQuickTaskHeading">軽量タスク</h4><strong id="homeQuickTaskCount">0</strong></div>
-              <div class="home-quick-task-form"><button id="homeLightTaskButton" class="secondary-button" type="button">＋ 軽量タスク</button></div>
               <div id="homeQuickTaskList" class="home-quick-task-list"></div>
             </section>
             <section class="home-now-section" aria-labelledby="homeTaskHeading"><h4 id="homeTaskHeading">タスク</h4><div id="nowTaskList" class="now-task-list"></div></section>
@@ -268,9 +268,13 @@
           <button id="confirmBoardCreateButton" class="primary-button" type="button">作成</button>
           <button id="cancelBoardCreateButton" class="secondary-button" type="button">キャンセル</button>
         </div>
-        <nav id="boardList" class="board-overview-list" aria-label="ボード一覧"></nav>
+        <nav id="boardList" class="board-overview-list" aria-label="表示するボード"></nav>
         <section class="panel board-all-panel">
-          <div class="panel-heading board-all-heading"><h3>未完了タスク</h3><nav id="boardOverviewFilters" class="board-overview-filters" aria-label="ボード別タスク絞り込み"></nav></div>
+          <form class="board-overview-toolbar" role="search" aria-label="ボードのタスク検索" autocomplete="off">
+            <input id="boardOverviewSearch" name="board_task_query" type="search" placeholder="タスクを検索" autocomplete="off" autocapitalize="none" spellcheck="false">
+            <select id="boardOverviewStatus" aria-label="タスク状態"><option value="open">未完了</option><option value="pinned">ピン留め</option><option value="scheduled">予定あり</option><option value="light">軽量タスク</option></select>
+            <button id="boardCreateTaskButton" class="primary-button" type="button">＋ タスク</button>
+          </form>
           <div id="boardOverviewTaskList" class="board-overview-task-list"></div>
         </section>
       </section>
@@ -279,8 +283,7 @@
         <header class="page-header board-header">
           <div><p class="eyebrow">CURRENT BOARD</p><h2 id="currentBoardTitle" contenteditable="true">ボード名</h2></div>
           <div class="header-actions board-primary-actions">
-            <button id="addCardButton" class="primary-button">＋ カード</button>
-            <button id="addLightTaskButton" class="secondary-button" type="button">＋ 軽量タスク</button>
+            <button id="addCardButton" class="primary-button">＋ タスク</button>
             <button id="completeSelectedButton" class="success-button hidden">選択したタスクを完了</button>
             <details class="board-actions-menu">
               <summary class="secondary-button" aria-label="ボードのその他の操作">…</summary>
@@ -543,7 +546,7 @@
         <label>タブサイズ<select id="tabSizeSelect"><option value="compact">コンパクト</option><option value="standard" selected>標準</option><option value="large">大きめ</option></select></label>
         <label>タブ横幅<select id="tabWidthSelect"><option value="narrow">狭い</option><option value="standard" selected>標準</option><option value="wide">広い</option></select></label>
         <p class="setting-note">PC版の配置と幅を調整できます。上・下ではタブの最小幅と左右余白に反映します。スマホは操作性優先の左ドロワー表示です。</p>
-        <label class="switch-row"><span>クイック＋ボタンを表示</span><input id="quickAddVisibleToggle" type="checkbox" checked></label>
+        <label class="switch-row"><span>右下FABを表示</span><input id="quickAddVisibleToggle" type="checkbox" checked></label>
         <label>＋ボタン位置<select id="quickAddPositionSelect"><option value="auto">自動</option><option value="bottom-right">右下</option><option value="bottom-left">左下</option><option value="top-right">右上</option><option value="top-left">左上</option></select></label>
         <p class="setting-note">自動：左→右下 / 右→左下 / 上→右下 / 下→右上。非表示にしても各画面の追加ボタンは使えます。</p>
         <label>上部バー<select id="utilityBarModeSelect"><option value="always">常に表示</option><option value="desktop">PCのみ</option><option value="mobile">スマホのみ</option><option value="hidden">非表示</option></select></label>

@@ -7101,3 +7101,38 @@ body[data-theme="dopaboy"] .board-overview-filters button.active,body[data-theme
   .memo-card{grid-template-columns:1fr;grid-template-areas:"head" "info" "actions"}
   .memo-card>.card-footer{justify-self:end;flex-wrap:wrap}
 }
+
+/* ===== board planner, shared create routes, and calendar month clarity ===== */
+.board-overview-list{display:flex;align-items:stretch;gap:8px;margin-bottom:14px;padding:2px 1px 7px;overflow-x:auto;overscroll-behavior-inline:contain}
+.board-switch-button,.board-overview-row{flex:0 0 auto;min-width:126px;min-height:58px;border:1px solid var(--border);border-radius:11px;background:var(--panel);box-shadow:none}
+.board-switch-button{display:grid;align-content:center;gap:3px;padding:8px 13px;color:var(--text);text-align:left}
+.board-switch-button strong,.board-switch-button small{display:block}.board-switch-button small{color:var(--muted)}
+.board-overview-row{display:grid;grid-template-columns:minmax(86px,1fr) 34px;gap:2px;padding:5px 6px 5px 12px;cursor:grab}
+.board-overview-row.active,.board-switch-button.active{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,var(--panel));color:var(--accent)}
+.board-overview-main{align-content:center;padding:3px 0}.board-overview-main strong{font-size:13px}.board-overview-main small{font-size:10px}
+.board-overview-row .board-pin-button{width:32px;height:32px;align-self:center;font-size:17px}
+.board-overview-row .board-order-controls{grid-column:1/-1;justify-content:flex-end}.board-overview-row .board-order-controls button{width:30px;height:28px}
+.board-all-panel{padding:14px}.board-overview-toolbar{display:grid;grid-template-columns:minmax(180px,1fr) minmax(135px,auto) auto;gap:8px;align-items:center}
+.board-overview-toolbar input,.board-overview-toolbar select{min-width:0;width:100%;height:40px;padding:8px 10px;border:1px solid var(--border);border-radius:9px;background:var(--panel);color:var(--text)}
+.board-overview-toolbar .primary-button{min-height:40px;white-space:nowrap}
+.board-overview-task-list{grid-template-columns:repeat(auto-fit,minmax(min(100%,330px),1fr));align-items:stretch}
+.board-task-row{align-content:start;min-height:88px;background:var(--panel)}
+.board-task-main{align-content:start}.board-task-main strong{font-size:14px}.board-task-main>small{margin-top:2px}
+.board-task-tags,.board-task-dates{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}.board-task-tags .tag-chip{font-size:9px;padding:2px 5px}.board-task-dates small{color:var(--muted);font-size:10px}
+.routine-form-panel>.panel-heading>div{min-width:0}.routine-form-panel>.panel-heading h3{margin-bottom:4px}
+.calendar-day.outside{opacity:1;background:color-mix(in srgb,var(--muted) 5%,var(--panel))!important;border-color:color-mix(in srgb,var(--border) 72%,transparent)!important;box-shadow:none!important}
+.calendar-day.outside .calendar-date-number{color:var(--muted);opacity:.62}.calendar-day.outside .calendar-task-dot,.calendar-day.outside .calendar-more{opacity:.62}
+.calendar-day.today{outline:2px solid var(--accent);outline-offset:1px}.calendar-day.today .calendar-date-number{background:var(--accent);color:#fff;font-weight:900}
+body[data-theme="black"] .calendar-day.outside{background:#10151c!important;border-color:#242d39!important}body[data-theme="black"] .calendar-day.today{outline-color:#62a7ff}
+body[data-theme="dopaboy"] .board-switch-button,body[data-theme="dopaboy"] .board-overview-row{border:2px solid #60419d;border-radius:4px;background:#17102c;color:#fff}
+body[data-theme="dopaboy"] .board-switch-button.active,body[data-theme="dopaboy"] .board-overview-row.active{border-color:#ffe600;background:#ff008c;box-shadow:3px 3px 0 #00f0ff}
+body[data-theme="dopaboy"] .board-overview-toolbar input,body[data-theme="dopaboy"] .board-overview-toolbar select{border:2px solid #65469f;border-radius:3px;background:#130727;color:#fff}
+body[data-theme="dopaboy"] .calendar-day.outside{background:#10091d!important;border-color:#39285e!important;box-shadow:none!important;clip-path:none!important}body[data-theme="dopaboy"] .calendar-day.outside .calendar-date-number{background:#24163e!important;color:#aaa0bf!important;box-shadow:none!important;clip-path:none!important}
+body[data-theme="dopaboy"] .calendar-day.today{outline:3px solid #00f0ff;outline-offset:1px}body[data-theme="dopaboy"] .calendar-day.today .calendar-date-number{background:#00f0ff!important;color:#08101a!important;opacity:1;box-shadow:0 0 12px rgba(0,240,255,.52)!important}
+@media(max-width:820px){
+  .board-overview-list{margin-inline:-2px}.board-switch-button,.board-overview-row{min-width:116px}
+  .board-overview-row{grid-template-columns:minmax(72px,1fr) 32px}.board-overview-row .board-order-controls{display:flex}
+  .board-overview-toolbar{grid-template-columns:minmax(0,1fr) auto}.board-overview-toolbar input{grid-column:1/-1}.board-overview-toolbar select{min-width:0}
+  .board-overview-task-list{grid-template-columns:1fr}.board-task-row{min-height:80px}
+}
+@media(max-width:390px){.board-overview-toolbar{grid-template-columns:1fr}.board-overview-toolbar input{grid-column:auto}.board-overview-toolbar .primary-button{width:100%}.calendar-detail-head{align-items:stretch;flex-direction:column}.calendar-detail-head .primary-button{width:100%}}
