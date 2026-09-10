@@ -59,10 +59,6 @@
     }
   }
 
-  function pruneQuickTaskLog(){
-    const cutoff=Date.now()-14*86400000;
-    data.quickTaskLog=data.quickTaskLog.filter(item=>Date.parse(item.completedAt)>=cutoff)
-  }
   function openLightTask(defaultBoardId=data.selectedBoardId,plannedDate=localDate(),requireBoard=false){
     const boardSelect=get("lightTaskBoardInput");
     boardSelect.innerHTML=(requireBoard?'<option value="">ボードを選択</option>':"")+data.boards.map(board=>`<option value="${board.id}">${esc(board.name)}</option>`).join("");
@@ -73,15 +69,14 @@
   function addQuickTask(){
     const title=get("lightTaskTitleInput").value.trim(),boardId=get("lightTaskBoardInput").value,plannedDate=get("lightTaskPlannedDateInput").value;if(!title||!boardId||!plannedDate)return;
     const before=snapshot(QUICK_KEYS);
-    data.quickTasks.unshift({id:uid(),title,boardId,plannedDate,createdAt:Date.now(),completed:false});
+    data.quickTasks.unshift({id:uid(),title,boardId,plannedDate,createdAt:Date.now(),completed:false,completedAt:""});
     save();pushHistory("軽量タスクを追加",QUICK_KEYS,before);closeModal("lightTaskModal");renderAll()
   }
   function completeQuickTask(id){
     const item=data.quickTasks.find(task=>task.id===id);if(!item)return;
-    const before=snapshot(QUICK_KEYS);
-    data.quickTasks=data.quickTasks.filter(task=>task.id!==id);
-    data.quickTaskLog.unshift({id:item.id,title:item.title,boardId:item.boardId,plannedDate:item.plannedDate,completedAt:new Date().toISOString()});pruneQuickTaskLog();
-    save();pushHistory("軽量タスクを完了",QUICK_KEYS,before);renderAll();standardAction("軽量タスク完了",item.title,"complete")
+    const before=snapshot(QUICK_KEYS),completed=!item.completed;
+    item.completed=completed;item.completedAt=completed?new Date().toISOString():"";
+    save();pushHistory(`軽量タスクを${completed?"完了":"未完了に変更"}`,QUICK_KEYS,before);renderAll();if(completed)standardAction("軽量タスク完了",item.title,"complete")
   }
   function deleteQuickTask(id){
     const item=data.quickTasks.find(task=>task.id===id);if(!item)return;
@@ -90,11 +85,12 @@
   }
   function renderQuickTasks(){
     const list=get("homeQuickTaskList"),count=get("homeQuickTaskCount");if(!list||!count)return;
-    const visible=data.quickTasks.filter(task=>!task.completed).sort((a,b)=>a.plannedDate.localeCompare(b.plannedDate)||a.createdAt-b.createdAt);
+    const today=localDate(),completedDate=task=>{const date=new Date(task.completedAt);return Number.isNaN(date.getTime())?"":localDate(date)};
+    const visible=data.quickTasks.filter(task=>task.completed?(task.plannedDate===today||(task.plannedDate<today&&completedDate(task)===today)):task.plannedDate<=today).sort((a,b)=>a.plannedDate.localeCompare(b.plannedDate)||a.createdAt-b.createdAt);
     count.textContent=String(visible.length);list.innerHTML="";
     visible.forEach(task=>{
-      const row=document.createElement("div");row.className="home-quick-task-item";
-      const done=document.createElement("button");done.type="button";done.className="quick-task-check";done.setAttribute("aria-label",`${task.title}を完了`);done.textContent="□";done.onclick=()=>completeQuickTask(task.id);
+      const row=document.createElement("div");row.className=`home-quick-task-item${task.completed?" completed":""}`;
+      const done=document.createElement("button");done.type="button";done.className="quick-task-check";done.setAttribute("aria-label",`${task.title}を${task.completed?"未完了に戻す":"完了"}`);done.textContent=task.completed?"☑":"□";done.onclick=()=>completeQuickTask(task.id);
       const title=document.createElement("span"),boardName=data.boards.find(board=>board.id===task.boardId)?.name||"ボードなし";title.innerHTML=`<strong>${esc(task.title)}</strong><small>${esc(boardName)} / ${esc(task.plannedDate.slice(5).replace("-","/"))}予定</small>`;
       const remove=document.createElement("button");remove.type="button";remove.className="quick-task-delete";remove.setAttribute("aria-label",`${task.title}を削除`);remove.textContent="×";remove.onclick=()=>deleteQuickTask(task.id);
       row.append(done,title,remove);list.appendChild(row)
@@ -103,6 +99,13 @@
 
   const baseRenderHome=renderHome;
   renderHome=function(){baseRenderHome();renderQuickTasks()};
+
+  function toggleTaskSelection(id,selected){
+    const found=findCard(id);if(!found||found.c.type!=="task")return;
+    const before=snapshot(TASK_KEYS),next=typeof selected==="boolean"?selected:!found.c.selected;if(found.c.selected===next)return;
+    found.c.selected=next;found.c.updatedAt=Date.now();save();renderAll();pushHistory("タスクのチェックを変更",TASK_KEYS,before)
+  }
+  window.toggleTaskSelected=toggleTaskSelection;
 
   saveCard=wrapMutation(saveCard,"タスクを保存",TASK_KEYS);E.saveCardButton.onclick=saveCard;
   quickTaskSave=wrapMutation(quickTaskSave,"タスクを追加",TASK_KEYS);E.saveQuickTaskButton.onclick=quickTaskSave;
@@ -117,7 +120,8 @@
 
   const baseRenderCard=renderCard;
   renderCard=function(card,sectionId){
-    const element=baseRenderCard(card,sectionId),pin=element.querySelector(".pin-card-button");
+    const element=baseRenderCard(card,sectionId),pin=element.querySelector(".pin-card-button"),checkbox=element.querySelector(".card-select");
+    if(checkbox)checkbox.onchange=()=>toggleTaskSelection(card.id,checkbox.checked);
     if(pin){const action=pin.onclick;pin.onclick=event=>{const before=snapshot(TASK_KEYS);action.call(pin,event);pushHistory("タスクのピンを変更",TASK_KEYS,before)}}
     return element
   };
@@ -184,5 +188,5 @@
   const bridge=window.taskKanrinnerCloudBridge;
   if(bridge){const replace=bridge.replaceCloudData.bind(bridge);bridge.replaceCloudData=next=>{const result=replace(next);clearHistory();return result};bridge.replaceData=next=>bridge.replaceCloudData(next)}
 
-  pruneQuickTaskLog();updateHistoryButtons();renderQuickTasks();renderAll()
+  updateHistoryButtons();renderQuickTasks();renderAll()
 })();
