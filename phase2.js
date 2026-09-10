@@ -72,11 +72,20 @@
     data.quickTasks.unshift({id:uid(),title,boardId,plannedDate,createdAt:Date.now(),completed:false,completedAt:""});
     save();pushHistory("軽量タスクを追加",QUICK_KEYS,before);closeModal("lightTaskModal");renderAll()
   }
+  function dopaQuickClearFeedback(title,origin){
+    if(data.settings.theme!=="dopaboy")return;
+    const root=document.createElement("div"),motion=data.settings.dopaMotion!==false,point=origin||{left:innerWidth/2,top:Math.min(innerHeight*.72,innerHeight-90),width:0,height:0};
+    root.className=`dopa-quick-clear-fx${motion?"":" motion-off"}`;
+    root.style.left=`${Math.max(78,Math.min(innerWidth-78,point.left+point.width/2))}px`;root.style.top=`${Math.max(70,Math.min(innerHeight-70,point.top+point.height/2))}px`;
+    root.innerHTML=`<div class="dopa-quick-clear-stamp"><b>✓</b><span>QUICK CLEAR!</span><small>+1</small></div><i class="dopa-quick-energy"></i>`;
+    if(motion)for(let i=0;i<7;i++){const spark=document.createElement("i");spark.className="dopa-quick-spark";spark.style.setProperty("--qx",`${Math.round((Math.random()-.5)*120)}px`);spark.style.setProperty("--qy",`${Math.round((Math.random()-.5)*88)}px`);spark.style.setProperty("--qr",`${Math.round(Math.random()*300-150)}deg`);root.appendChild(spark)}
+    root.setAttribute("aria-label",`QUICK CLEAR! ${title}`);document.body.appendChild(root);setTimeout(()=>root.remove(),motion?900:700)
+  }
   function completeQuickTask(id){
     const item=data.quickTasks.find(task=>task.id===id);if(!item)return;
-    const before=snapshot(QUICK_KEYS),completed=!item.completed;
+    const trigger=document.activeElement?.matches?.(".quick-task-check,.board-task-check")?document.activeElement.getBoundingClientRect():null,before=snapshot(QUICK_KEYS),completed=!item.completed;
     item.completed=completed;item.completedAt=completed?new Date().toISOString():"";
-    save();pushHistory(`軽量タスクを${completed?"完了":"未完了に変更"}`,QUICK_KEYS,before);renderAll();if(completed)standardAction("軽量タスク完了",item.title,"complete")
+    save();pushHistory(`軽量タスクを${completed?"完了":"未完了に変更"}`,QUICK_KEYS,before);renderAll();if(completed){if(data.settings.theme==="dopaboy")dopaQuickClearFeedback(item.title,trigger);else standardAction("軽量タスク完了",item.title,"complete")}
   }
   function deleteQuickTask(id){
     const item=data.quickTasks.find(task=>task.id===id);if(!item)return;
