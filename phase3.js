@@ -119,7 +119,7 @@
 
   const baseApplyTheme=applyTheme;
   applyTheme=function(){baseApplyTheme();applyUtilitySettings()};
-  addEventListener("resize",()=>{if(data.view==="boards")renderBoards();else if(data.view==="board")renderBoard();applyUtilitySettings()});
+  addEventListener("resize",()=>{if(data.view==="boards")renderBoards();applyUtilitySettings()});
   document.addEventListener("keydown",event=>{if(event.key==="Escape"){closeCreateMenu();get("routineCreatePanel").classList.add("hidden")}});
 
   applyUtilitySettings();renderAll()
