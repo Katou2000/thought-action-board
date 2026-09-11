@@ -71,15 +71,18 @@
   const baseNextRepeat=nextRepeat;
   nextRepeat=function(card){const next=baseNextRepeat(card);if(next&&card.plannedDate)next.plannedDate=nextDue(card.plannedDate,card.repeat);return next};
 
+  function homeGroupFor(card){
+    const boardValue=data.boards.find(item=>item.id===card.boardId),section=boardValue?.sections.find(item=>item.id===card.sectionId),normal=window.boardDefaultSection?.(boardValue);return section&&section!==normal&&section.showOnHome?section:null
+  }
   function nowTaskInfo(card,today=todayKey()){
     if(card.plannedDate){if(card.plannedDate>today)return null;return card.plannedDate<today?{group:0,label:"やり残し",tone:"late",detail:`${card.plannedDate.slice(5).replace("-","/")}予定`}:{group:1,label:"今日指定",tone:"today",detail:"今日やる"}}
     if(card.start&&card.start>today)return null;
     if(card.due&&card.due<today)return{group:0,label:"やり残し",tone:"late",detail:`期限切れ ${card.due.slice(5).replace("-","/")}〆`};
     if(card.start&&( !card.due||today<=card.due))return{group:card.due?2:3,label:"現在期間中",tone:"period",detail:periodLabel(card)};
     if(!card.start&&card.due===today)return{group:2,label:"本日〆",tone:"period",detail:periodLabel(card)};
-    return null
+    const group=homeGroupFor(card);return group?{group:4,label:"ホーム区分",tone:"section",detail:group.name}:null
   }
-  function currentTasks(){return cards().filter(c=>c.type==="task").map(c=>({card:c,info:nowTaskInfo(c)})).filter(x=>x.info).sort((a,b)=>a.info.group-b.info.group||(a.card.due||"9999-99-99").localeCompare(b.card.due||"9999-99-99")||(b.card.pinned-a.card.pinned))}
+  function currentTasks(){const unique=[...new Map(cards().filter(c=>c.type==="task").map(card=>[card.id,card])).values()];return unique.map(c=>({card:c,info:nowTaskInfo(c)})).filter(x=>x.info).sort((a,b)=>a.info.group-b.info.group||(a.card.due||"9999-99-99").localeCompare(b.card.due||"9999-99-99")||(b.card.pinned-a.card.pinned))}
   function renderNowTasks(){
     const list=currentTasks();
     get("nowTaskList").innerHTML=list.length?list.map(({card,info})=>`<article class="now-task-card ${info.tone}${card.selected?" completed":""}"><label class="task-check-control"><input type="checkbox" ${card.selected?"checked":""} onchange="toggleTaskSelected('${card.id}',this.checked)"><span aria-hidden="true">${card.selected?"☑":"□"}</span></label><div class="now-task-main"><div class="now-task-badges"><span class="now-task-status">${info.label}</span>${card.pinned?'<span class="now-task-pin">📌</span>':""}</div><strong>${esc(card.title)}</strong><small>${esc(card.boardName)} / ${esc(card.sectionName)} ・ ${esc(info.detail)}</small></div><div class="header-actions"><button class="secondary-button" onclick="openCardAny('${card.id}')">開く</button>${card.selected?`<button class="success-button" onclick="completeOne('${card.id}')">完了</button>`:""}</div></article>`).join(""):"<div class=\"now-task-empty\"><strong>今やることはありません</strong><span>期間または予定日を設定すると、ここに表示されます。</span></div>"

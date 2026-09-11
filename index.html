@@ -290,7 +290,7 @@
               <div class="board-actions-menu-panel">
                 <button id="pinBoardButton" class="secondary-button">☆ ボードをピン</button>
                 <button id="saveBoardTemplateButton" class="secondary-button">🧩 型を保存</button>
-                <button id="addSectionButton" class="secondary-button">＋ 小項目</button>
+                <button id="addSectionButton" class="secondary-button">＋ 区分</button>
                 <button id="deleteBoardButton" class="danger-outline-button">削除</button>
               </div>
             </details>
@@ -464,7 +464,7 @@
     <div class="form-grid">
       <label>種類<select id="cardTypeInput"><option value="task">タスク</option><option value="memo">メモ</option><option value="idea">アイデア</option><option value="link">リンク</option><option value="image">画像</option></select></label>
       <label>ボード<select id="cardBoardInput"></select></label>
-      <label>小項目<select id="cardSectionInput"></select></label>
+      <label>区分<select id="cardSectionInput"></select></label>
       <label>ピン留め<select id="cardPinnedInput"><option value="false">しない</option><option value="true">する</option></select></label>
       <label class="full">タイトル<input id="cardTitleInput" placeholder="カードのタイトル"></label>
       <label class="full">内容<textarea id="cardContentInput" placeholder="メモや詳細"></textarea></label>
@@ -607,6 +607,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="image-storage.js"></script>
   <script src="script.js"></script>
+  <script src="board-groups.js"></script>
   <script src="tutorial-copy.js"></script>
   <script src="ux-v2.js"></script>
   <script src="phase2.js"></script>

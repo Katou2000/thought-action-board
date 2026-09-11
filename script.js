@@ -887,7 +887,7 @@ window.useTemplate=id=>{
   const t=data.templates.find(t=>t.id===id);if(!t)return;
   if(t.type==="board"){
     const name=prompt("新しいボード名",t.name);if(!name?.trim())return;
-    const b={id:uid(),name:name.trim(),pinned:false,createdAt:Date.now(),updatedAt:Date.now(),sections:clone(t.payload.sections||[]).map(s=>({id:uid(),name:s.name,cards:(s.cards||[]).map(c=>({...clone(c),id:uid(),due:"",selected:false,pinned:false,createdAt:Date.now(),updatedAt:Date.now()}))}))};
+    const b={id:uid(),name:name.trim(),pinned:false,createdAt:Date.now(),updatedAt:Date.now(),sections:clone(t.payload.sections||[]).map((s,index)=>({id:uid(),name:s.name,isDefault:index===0,showOnHome:index===0?false:s.showOnHome===true,cards:(s.cards||[]).map(c=>({...clone(c),id:uid(),due:"",selected:false,pinned:false,createdAt:Date.now(),updatedAt:Date.now()}))}))};
     if(!b.sections.length)b.sections=[{id:uid(),name:"未分類",cards:[]}];data.boards.push(b);data.selectedBoardId=b.id;touchBoard(b);save();show("board");return;
   }
   const name=prompt("新しい目標名",t.name);if(!name?.trim())return;
