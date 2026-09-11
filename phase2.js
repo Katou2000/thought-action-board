@@ -122,6 +122,10 @@
   completeCards=wrapMutation(completeCards,"タスクの完了状態を変更",TASK_COMPLETE_KEYS);
   dropSection=wrapMutation(dropSection,"タスクを移動",TASK_KEYS);
   dropCard=wrapMutation(dropCard,"タスクを並び替え",TASK_KEYS);
+  addSection=wrapMutation(addSection,"区分を追加",TASK_KEYS);
+  updateSection=wrapMutation(updateSection,"区分の設定を変更",TASK_KEYS);
+  reorderSection=wrapMutation(reorderSection,"区分を並び替え",TASK_KEYS);
+  deleteSection=wrapMutation(deleteSection,"区分を削除",TASK_KEYS);
   window.restoreArchive=wrapMutation(window.restoreArchive,"タスクの完了を解除",TASK_COMPLETE_KEYS);
   window.toggleRoutineDone=wrapMutation(window.toggleRoutineDone,"ルーティンタスクの完了状態を変更",ROUTINE_KEYS);
   window.toggleRoutinePin=wrapMutation(window.toggleRoutinePin,"ルーティンタスクのピンを変更",ROUTINE_KEYS);

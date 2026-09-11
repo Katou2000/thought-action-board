@@ -248,7 +248,7 @@
         <div class="template-two-column">
           <section class="panel">
             <div class="panel-heading"><h3>📁 ボードテンプレート</h3><span id="boardTemplateCount" class="count-badge">0</span></div>
-            <p class="setting-note">小項目・カード内容・色・タグを保存。使う時は期限を空にして新規ボードとして作成します。</p>
+            <p class="setting-note">区分・カード内容・色・タグを保存。使う時は期限を空にして新規ボードとして作成します。</p>
             <div id="boardTemplateList" class="template-list"></div>
           </section>
           <section class="panel">
@@ -290,7 +290,7 @@
               <div class="board-actions-menu-panel">
                 <button id="pinBoardButton" class="secondary-button">☆ ボードをピン</button>
                 <button id="saveBoardTemplateButton" class="secondary-button">🧩 型を保存</button>
-                <button id="addSectionButton" class="secondary-button">＋ 小項目</button>
+                <button id="addSectionButton" class="secondary-button">＋ 区分</button>
                 <button id="deleteBoardButton" class="danger-outline-button">削除</button>
               </div>
             </details>
@@ -459,12 +459,20 @@
     </section>
   </div></div>
 
+  <div id="sectionModal" class="modal hidden"><div class="modal-backdrop" data-close="sectionModal"></div><div class="modal-card small-modal">
+    <div class="modal-header"><h2 id="sectionModalTitle">区分を追加</h2><button class="close-button" data-close="sectionModal">×</button></div>
+    <label>区分名<input id="sectionNameInput" type="text" placeholder="例：作業中" autocomplete="off"></label>
+    <label class="switch-row section-modal-home"><span>Homeに表示</span><input id="sectionHomeInput" type="checkbox"></label>
+    <p class="setting-note">ONにすると、この区分の未完了タスクがHomeの「今やること」に表示されます。</p>
+    <div class="modal-actions"><button class="secondary-button" data-close="sectionModal">キャンセル</button><button id="saveSectionButton" class="primary-button" type="button">保存</button></div>
+  </div></div>
+
   <div id="cardModal" class="modal hidden"><div class="modal-backdrop" data-close="cardModal"></div><div class="modal-card">
     <div class="modal-header"><h2 id="cardModalTitle">カードを追加</h2><button class="close-button" data-close="cardModal">×</button></div>
     <div class="form-grid">
       <label>種類<select id="cardTypeInput"><option value="task">タスク</option><option value="memo">メモ</option><option value="idea">アイデア</option><option value="link">リンク</option><option value="image">画像</option></select></label>
       <label>ボード<select id="cardBoardInput"></select></label>
-      <label>小項目<select id="cardSectionInput"></select></label>
+      <label>区分<select id="cardSectionInput"></select></label>
       <label>ピン留め<select id="cardPinnedInput"><option value="false">しない</option><option value="true">する</option></select></label>
       <label class="full">タイトル<input id="cardTitleInput" placeholder="カードのタイトル"></label>
       <label class="full">内容<textarea id="cardContentInput" placeholder="メモや詳細"></textarea></label>
@@ -486,7 +494,7 @@
 
   <div id="quickTaskModal" class="modal hidden"><div class="modal-backdrop" data-close="quickTaskModal"></div><div class="modal-card small-modal">
     <div class="modal-header"><h2>クイック追加</h2><button class="close-button" data-close="quickTaskModal">×</button></div>
-    <label>タスク名<input id="quickTaskTitle" placeholder="やること"></label><label>ボード<select id="quickTaskBoard"></select></label><label>小項目<select id="quickTaskSection"></select></label><label>着手可能日<input id="quickTaskStart" type="date"></label>
+    <label>タスク名<input id="quickTaskTitle" placeholder="やること"></label><label>ボード<select id="quickTaskBoard"></select></label><label>区分<select id="quickTaskSection"></select></label><label>着手可能日<input id="quickTaskStart" type="date"></label>
       <label>期限<input id="quickTaskDue" type="date"></label>
     <div class="modal-actions"><button class="secondary-button" data-close="quickTaskModal">キャンセル</button><button id="saveQuickTaskButton" class="primary-button">追加</button></div>
   </div></div>
