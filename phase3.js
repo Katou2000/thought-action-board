@@ -3,7 +3,7 @@
   "use strict";
   const get=id=>document.getElementById(id);
   const history=window.taskKanrinnerHistory;
-  const BOARD_HISTORY_KEYS=["boards","recent","selectedBoardId"];
+  const BOARD_HISTORY_KEYS=["boards","recent","selectedBoardId"],BOARD_DELETE_HISTORY_KEYS=[...BOARD_HISTORY_KEYS,"quickTasks","quickTaskLog","view"];
   let boardFilter="all",routineFilter="all",draggedBoardId=null,createContext={};
 
   data.settings.utilityBarMode=["always","desktop","mobile","hidden"].includes(data.settings.utilityBarMode)?data.settings.utilityBarMode:"always";
@@ -65,6 +65,20 @@
     if(!sourceId||!targetId||sourceId===targetId)return;const from=data.boards.findIndex(b=>b.id===sourceId),to=data.boards.findIndex(b=>b.id===targetId);if(from<0||to<0)return;
     const before=boardHistoryBefore(),[moved]=data.boards.splice(from,1);data.boards.splice(to,0,moved);finishBoardHistory("ボードを並び替え",before)
   }
+  function renameBoardFromOverview(id){
+    const boardValue=data.boards.find(item=>item.id===id),name=boardValue&&prompt("ボード名",boardValue.name);if(!boardValue||!name?.trim()||name.trim()===boardValue.name)return;
+    const before=boardHistoryBefore();boardValue.name=name.trim();boardValue.updatedAt=Date.now();data.recent.forEach(item=>{if(item.kind==="board"&&item.id===id)item.label=boardValue.name;if(item.boardId===id)item.detail=String(item.detail||"").replace(/^[^/]+/,boardValue.name)});finishBoardHistory("ボード名を変更",before)
+  }
+  function deleteBoardSafely(id){
+    const target=data.boards.find(item=>item.id===id);if(!target)return;if(data.boards.length===1)return alert("最後のボードは削除できません。");
+    if(!confirm(`「${target.name}」を削除します。\n中のタスクは削除されず、未分類へ移動します。`))return;
+    const before=history?.snapshot(BOARD_DELETE_HISTORY_KEYS),fallback=data.boards.find(item=>item.id!==id),normal=window.boardDefaultSection?.(fallback)||fallback.sections.find(section=>section.name==="未分類")||fallback.sections[0];
+    target.sections.forEach(section=>normal.cards.push(...section.cards));fallback.updatedAt=Date.now();
+    data.quickTasks.forEach(task=>{if(task.boardId===id)task.boardId=fallback.id});data.quickTaskLog.forEach(task=>{if(task.boardId===id)task.boardId=fallback.id});
+    data.recent.forEach(item=>{if(item.boardId===id)item.boardId=fallback.id});data.recent=data.recent.filter(item=>!(item.kind==="board"&&item.id===id));
+    data.boards=data.boards.filter(item=>item.id!==id);if(data.selectedBoardId===id){data.selectedBoardId=fallback.id;data.view="boards";boardFilter="all"}else if(boardFilter===id)boardFilter="all";
+    save();renderAll();history?.pushHistory("ボードを削除",BOARD_DELETE_HISTORY_KEYS,before);feedbackAction("ボードを削除",`${target.name} のタスクを ${fallback.name} / 未分類へ移動`,"delete")
+  }
   function renderBoardOverviewTasks(){
     if(boardFilter!=="all"&&!data.boards.some(b=>b.id===boardFilter))boardFilter="all";
     const list=get("boardOverviewTaskList"),query=get("boardOverviewSearch").value.trim().toLocaleLowerCase("ja"),status=get("boardOverviewStatus").value;
@@ -79,13 +93,15 @@
     const all=document.createElement("button");all.type="button";all.className=`board-switch-button${boardFilter==="all"?" active":""}`;all.innerHTML=`<strong>すべて</strong><small>${cards().filter(card=>card.type==="task").length+data.quickTasks.filter(task=>!task.completed).length}</small>`;all.onclick=()=>{boardFilter="all";renderBoards()};E.boardList.appendChild(all);
     data.boards.forEach((boardValue,index)=>{
       const row=document.createElement("article");row.className=`board-overview-row${boardFilter===boardValue.id?" active":""}`;row.dataset.boardId=boardValue.id;row.draggable=innerWidth>820;
-      row.ondragstart=event=>{draggedBoardId=boardValue.id;event.dataTransfer.effectAllowed="move";row.classList.add("dragging")};row.ondragend=()=>{draggedBoardId=null;row.classList.remove("dragging")};row.ondragover=event=>{if(draggedBoardId)event.preventDefault()};row.ondrop=event=>{event.preventDefault();reorderBoard(draggedBoardId,boardValue.id)};
+      row.ondragstart=event=>{if(event.target.closest("button,details,summary"))return event.preventDefault();draggedBoardId=boardValue.id;event.dataTransfer.effectAllowed="move";row.classList.add("dragging")};row.ondragend=()=>{draggedBoardId=null;row.classList.remove("dragging")};row.ondragover=event=>{if(draggedBoardId)event.preventDefault()};row.ondrop=event=>{event.preventDefault();reorderBoard(draggedBoardId,boardValue.id)};
       const main=document.createElement("button");main.type="button";main.className="board-overview-main";main.innerHTML=`<strong>${esc(boardValue.name)}</strong><small>${boardTaskCount(boardValue)}</small>`;main.onclick=()=>{boardFilter=boardValue.id;data.selectedBoardId=boardValue.id;renderBoards()};
       const pin=document.createElement("button");pin.type="button";pin.className=`board-pin-button${boardValue.pinned?" pinned":""}`;pin.textContent=boardValue.pinned?"★":"☆";pin.setAttribute("aria-label",`${boardValue.name}を${boardValue.pinned?"ピン留め解除":"ピン留め"}`);pin.onclick=event=>{event.stopPropagation();const before=boardHistoryBefore();boardValue.pinned=!boardValue.pinned;boardValue.updatedAt=Date.now();finishBoardHistory("ボードのピンを変更",before)};
       const controls=document.createElement("div");controls.className="board-order-controls";controls.innerHTML=`<button type="button" aria-label="${esc(boardValue.name)}を上へ" ${index===0?"disabled":""}>↑</button><button type="button" aria-label="${esc(boardValue.name)}を下へ" ${index===data.boards.length-1?"disabled":""}>↓</button>`;const [up,down]=controls.querySelectorAll("button");up.onclick=event=>{event.stopPropagation();moveBoard(boardValue.id,-1)};down.onclick=event=>{event.stopPropagation();moveBoard(boardValue.id,1)};
-      row.append(main,pin,controls);E.boardList.appendChild(row)
+      const actions=document.createElement("details");actions.className="board-row-actions";actions.innerHTML=`<summary aria-label="${esc(boardValue.name)}の操作">…</summary><div class="board-row-actions-panel"><button type="button" data-board-action="rename">名前変更</button><button type="button" class="danger" data-board-action="delete">削除</button></div>`;actions.ontoggle=()=>{if(!actions.open)return;const rect=actions.querySelector("summary").getBoundingClientRect(),width=132;actions.style.setProperty("--board-menu-top",`${rect.bottom+5}px`);actions.style.setProperty("--board-menu-left",`${Math.max(8,Math.min(innerWidth-width-8,rect.right-width))}px`)};actions.onclick=event=>{event.stopPropagation();const action=event.target.closest("[data-board-action]")?.dataset.boardAction;if(!action)return;event.preventDefault();actions.open=false;if(action==="rename")renameBoardFromOverview(boardValue.id);if(action==="delete")deleteBoardSafely(boardValue.id)};
+      row.append(main,pin,actions,controls);E.boardList.appendChild(row)
     });renderBoardOverviewTasks()
   };
+  deleteBoard=()=>deleteBoardSafely(data.selectedBoardId);E.deleteBoardButton.onclick=deleteBoard;
   get("boardOverviewSearch").addEventListener("input",renderBoardOverviewTasks);get("boardOverviewStatus").addEventListener("change",renderBoardOverviewTasks);
   get("boardCreateTaskButton").onclick=event=>openCreateMenu("boards",event,{source:"boards",boardId:boardFilter==="all"?null:boardFilter,requireBoard:boardFilter==="all",taskOnly:true});
   E.addCardButton.onclick=event=>openCreateMenu("board-detail",event,{source:"board",boardId:data.selectedBoardId,taskOnly:true});

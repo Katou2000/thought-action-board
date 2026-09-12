@@ -7108,10 +7108,15 @@ body[data-theme="dopaboy"] .board-overview-filters button.active,body[data-theme
 .board-switch-button,.board-overview-row{flex:0 0 auto;min-width:126px;min-height:58px;border:1px solid var(--border);border-radius:11px;background:var(--panel);box-shadow:none}
 .board-switch-button{display:grid;align-content:center;gap:3px;padding:8px 13px;color:var(--text);text-align:left}
 .board-switch-button strong,.board-switch-button small{display:block}.board-switch-button small{color:var(--muted)}
-.board-overview-row{display:grid;grid-template-columns:minmax(86px,1fr) 34px;gap:2px;padding:5px 6px 5px 12px;cursor:grab}
+.board-overview-row{display:grid;grid-template-columns:minmax(54px,1fr) 32px 32px;gap:2px;padding:5px 6px 5px 12px;cursor:grab}
 .board-overview-row.active,.board-switch-button.active{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,var(--panel));color:var(--accent)}
 .board-overview-main{align-content:center;padding:3px 0}.board-overview-main strong{font-size:13px}.board-overview-main small{font-size:10px}
 .board-overview-row .board-pin-button{width:32px;height:32px;align-self:center;font-size:17px}
+.board-row-actions{position:relative;align-self:center}
+.board-row-actions>summary{display:grid;place-items:center;width:32px;height:32px;border:0;border-radius:8px;background:transparent;color:var(--muted);list-style:none;font-weight:900;cursor:pointer}
+.board-row-actions>summary::-webkit-details-marker{display:none}.board-row-actions>summary:hover{background:var(--panel2);color:var(--text)}
+.board-row-actions-panel{position:fixed;z-index:85;top:var(--board-menu-top);left:var(--board-menu-left);display:grid;min-width:132px;padding:5px;border:1px solid var(--border);border-radius:9px;background:var(--panel);box-shadow:var(--shadow)}
+.board-row-actions-panel button{border:0;border-radius:7px;background:transparent;color:var(--text);padding:8px 9px;text-align:left;white-space:nowrap}.board-row-actions-panel button:hover{background:var(--panel2)}.board-row-actions-panel button.danger{color:var(--danger)}
 .board-overview-row .board-order-controls{grid-column:1/-1;justify-content:flex-end}.board-overview-row .board-order-controls button{width:30px;height:28px}
 .board-all-panel{padding:14px}.board-overview-toolbar{display:grid;grid-template-columns:minmax(180px,1fr) minmax(135px,auto) auto;gap:8px;align-items:center}
 .board-overview-toolbar input,.board-overview-toolbar select{min-width:0;width:100%;height:40px;padding:8px 10px;border:1px solid var(--border);border-radius:9px;background:var(--panel);color:var(--text)}
@@ -7132,7 +7137,7 @@ body[data-theme="dopaboy"] .calendar-day.outside{background:#10091d!important;bo
 body[data-theme="dopaboy"] .calendar-day.today{outline:3px solid #00f0ff;outline-offset:1px}body[data-theme="dopaboy"] .calendar-day.today .calendar-date-number{background:#00f0ff!important;color:#08101a!important;opacity:1;box-shadow:0 0 12px rgba(0,240,255,.52)!important}
 @media(max-width:820px){
   .board-overview-list{margin-inline:-2px}.board-switch-button,.board-overview-row{min-width:116px}
-  .board-overview-row{grid-template-columns:minmax(72px,1fr) 32px}.board-overview-row .board-order-controls{display:flex}
+  .board-overview-row{grid-template-columns:minmax(48px,1fr) 32px 32px}.board-overview-row .board-order-controls{display:flex}
   .board-overview-toolbar{grid-template-columns:minmax(0,1fr) auto}.board-overview-toolbar input{grid-column:1/-1}.board-overview-toolbar select{min-width:0}
   .board-overview-task-list{grid-template-columns:1fr}.board-task-row{min-height:80px}
 }

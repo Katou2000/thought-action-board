@@ -23,6 +23,8 @@
 
   window.boardDefaultSection=defaultSection;
   prepareBoards();
+  const baseEnsureCurrentData=ensureCurrentData;
+  ensureCurrentData=function(){baseEnsureCurrentData();prepareBoards()};
 
   addSection=function(){
     const current=board(),name=prompt("区分名","新しい区分");if(!current||!name?.trim())return;
