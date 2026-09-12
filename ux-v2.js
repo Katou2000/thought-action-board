@@ -72,7 +72,7 @@
   nextRepeat=function(card){const next=baseNextRepeat(card);if(next&&card.plannedDate)next.plannedDate=nextDue(card.plannedDate,card.repeat);return next};
 
   function homeGroupFor(card){
-    const boardValue=data.boards.find(item=>item.id===card.boardId),section=boardValue?.sections.find(item=>item.id===card.sectionId),normal=window.boardDefaultSection?.(boardValue);return section&&section!==normal&&section.showOnHome?section:null
+    const boardValue=data.boards.find(item=>item.id===card.boardId),section=boardValue?.sections.find(item=>item.id===card.sectionId);window.boardDefaultSection?.(boardValue);return section?.isLane===true&&section.showOnHome?section:null
   }
   function nowTaskInfo(card,today=todayKey()){
     if(card.plannedDate){if(card.plannedDate>today)return null;return card.plannedDate<today?{group:0,label:"やり残し",tone:"late",detail:`${card.plannedDate.slice(5).replace("-","/")}予定`}:{group:1,label:"今日指定",tone:"today",detail:"今日やる"}}
