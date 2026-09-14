@@ -272,7 +272,7 @@ function renderBoards(){
     const name=document.createElement("strong");name.textContent="📁 "+b.name;
     const count=document.createElement("small"),cardCount=b.sections.reduce((total,section)=>total+section.cards.length,0);count.textContent=`${b.sections.length}項目 / ${cardCount}件`;
     main.append(name,count);
-    main.onclick=()=>{data.selectedBoardId=b.id;touchBoard(b);save();show("board");closeSide()};
+    main.onclick=()=>selectBoard(b.id);
     const pin=document.createElement("button");pin.type="button";pin.className="board-pin-button"+(b.pinned?" pinned":"");pin.textContent=b.pinned?"★":"☆";pin.setAttribute("aria-label",`${b.name}を${b.pinned?"ピン留め解除":"ピン留め"}`);
     pin.onclick=e=>{e.stopPropagation();b.pinned=!b.pinned;b.updatedAt=Date.now();save();renderBoards();if(data.view==="board")updateBoardPin();if(data.view==="shortcuts")renderShortcuts()};
     row.append(main,pin);E.boardList.appendChild(row);
@@ -282,7 +282,8 @@ function renderSidebar(){
   renderBoards();
   renderNav();editMode();
 }
-function addBoard(){const name=E.boardNameInput.value.trim();if(!name)return;const b={id:uid(),name,pinned:false,updatedAt:Date.now(),sections:[{id:uid(),name:"未分類",cards:[]}]};data.boards.push(b);data.selectedBoardId=b.id;E.boardNameInput.value="";touchBoard(b);save();show("board");dopaAction("BOARD BUILD!!",name);standardAction("ボードを追加",name,"save")}
+function selectBoard(id){const b=data.boards.find(item=>item.id===id);if(!b)return false;data.selectedBoardId=b.id;document.querySelector(".board-actions-menu")?.removeAttribute("open");document.getElementById("boardSectionCreatePanel")?.classList.add("hidden");const input=document.getElementById("boardSectionNameInput");if(input)input.value="";touchBoard(b);save();show("board");closeSide();return true}
+function addBoard(){const name=E.boardNameInput.value.trim();if(!name)return;const b={id:uid(),name,pinned:false,updatedAt:Date.now(),sections:[{id:uid(),name:"未分類",cards:[]}]};data.boards.push(b);E.boardNameInput.value="";selectBoard(b.id);dopaAction("BOARD BUILD!!",name);standardAction("ボードを追加",name,"save")}
 function updateBoardPin(){const b=board();E.pinBoardButton.textContent=b?.pinned?"★ ピン留め中":"☆ ボードをピン"}
 function todayStats(){
   const t=localDate();
@@ -888,7 +889,7 @@ window.useTemplate=id=>{
   if(t.type==="board"){
     const name=prompt("新しいボード名",t.name);if(!name?.trim())return;
     const b={id:uid(),name:name.trim(),pinned:false,createdAt:Date.now(),updatedAt:Date.now(),sections:clone(t.payload.sections||[]).map((s,index)=>({id:uid(),name:s.name,isDefault:index===0,isLane:index===0?false:s.isLane===true,showOnHome:index===0?false:s.isLane===true&&s.showOnHome===true,cards:(s.cards||[]).map(c=>({...clone(c),id:uid(),due:"",selected:false,pinned:false,createdAt:Date.now(),updatedAt:Date.now()}))}))};
-    if(!b.sections.length)b.sections=[{id:uid(),name:"未分類",cards:[]}];data.boards.push(b);data.selectedBoardId=b.id;touchBoard(b);save();show("board");return;
+    if(!b.sections.length)b.sections=[{id:uid(),name:"未分類",cards:[]}];data.boards.push(b);selectBoard(b.id);return;
   }
   const name=prompt("新しい目標名",t.name);if(!name?.trim())return;
   const g={id:uid(),name:name.trim(),due:"",note:t.payload.note||"",pinned:false,updatedAt:Date.now(),blocks:(t.payload.blocks||[]).map(b=>({id:uid(),title:b.title,done:false}))};data.goalTowers.push(g);data.selectedGoalId=g.id;touchGoal(g);save();show("builder")

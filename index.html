@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>タスク管理ンナー</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=1.7-board-detail">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#2563eb">
   <meta name="application-name" content="タスク管理ンナー">
@@ -296,6 +296,11 @@
             </details>
           </div>
         </header>
+        <div id="boardSectionCreatePanel" class="compact-create-panel board-overview-create hidden" aria-label="区分を追加">
+          <input id="boardSectionNameInput" placeholder="区分名" autocomplete="off">
+          <button id="confirmBoardSectionButton" class="primary-button" type="button">追加</button>
+          <button id="cancelBoardSectionButton" class="secondary-button" type="button">キャンセル</button>
+        </div>
         <form class="toolbar app-search-form board-filter-toolbar" role="search" aria-label="カード検索" autocomplete="off">
           <button id="boardSearchToggleButton" class="secondary-button board-search-toggle" type="button" aria-expanded="false" aria-controls="boardSearchBox">🔍 検索</button>
           <div id="boardSearchBox" class="board-search-box hidden">
@@ -606,12 +611,12 @@
   <script src="supabase-config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="image-storage.js"></script>
-  <script src="script.js"></script>
-  <script src="board-groups.js"></script>
+  <script src="script.js?v=1.7-board-detail"></script>
+  <script src="board-groups.js?v=1.7-board-detail"></script>
   <script src="tutorial-copy.js"></script>
   <script src="ux-v2.js"></script>
   <script src="phase2.js"></script>
-  <script src="phase3.js"></script>
+  <script src="phase3.js?v=1.7-board-detail"></script>
   <script src="cloud-sync.js"></script>
   <script>if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js'));}</script>
 </body>

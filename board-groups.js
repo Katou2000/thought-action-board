@@ -4,32 +4,29 @@
   const get=id=>document.getElementById(id),HISTORY_KEYS=["boards","recent","selectedBoardId"];
   let draggedGroupId=null;
 
-  function defaultSection(boardValue){
+  function defaultSection(boardValue,create=true){
     if(!boardValue)return null;
-    boardValue.sections=Array.isArray(boardValue.sections)?boardValue.sections:[];
-    const hadDefaultMarker=boardValue.sections.some(item=>item.isDefault===true),hadLaneMarker=boardValue.sections.some(item=>typeof item.isLane==="boolean");
-    let section=boardValue.sections.find(item=>item.isDefault===true)||boardValue.sections.find(item=>item.name==="未分類")||boardValue.sections[0];
-    if(!section){section={id:uid(),name:"未分類",cards:[],isDefault:true,isLane:false,showOnHome:false};boardValue.sections.push(section)}
+    const sections=Array.isArray(boardValue.sections)?boardValue.sections:[];
+    const hadDefaultMarker=sections.some(item=>item.isDefault===true),hadLaneMarker=sections.some(item=>typeof item.isLane==="boolean");
+    let section=sections.find(item=>item.isDefault===true)||sections.find(item=>item.name==="未分類")||sections[0];
+    if(!section&&create){if(!Array.isArray(boardValue.sections))boardValue.sections=[];section={id:uid(),name:"未分類",cards:[],isDefault:true,isLane:false,showOnHome:false};boardValue.sections.push(section)}
+    if(!section)return null;
     boardValue.sections.forEach(item=>{if(typeof item.isLane!=="boolean")item.isLane=!hadLaneMarker&&hadDefaultMarker&&item!==section;item.isDefault=item===section;item.isLane=item===section?false:item.isLane===true;item.showOnHome=item.isLane&&item.showOnHome===true});
     if(boardValue.sections[0]!==section)boardValue.sections=[section,...boardValue.sections.filter(item=>item!==section)];
     return section
   }
-  function prepareBoards(){data.boards.forEach(defaultSection)}
   function historyBefore(){return window.taskKanrinnerHistory?.snapshot(HISTORY_KEYS)||null}
   function finishGroupChange(label,before){const current=board();touchBoard(current);save();renderBoard();renderSidebar();if(data.view==="home")renderHome();if(before)window.taskKanrinnerHistory?.pushHistory(label,HISTORY_KEYS,before)}
-  function groupSections(boardValue){defaultSection(boardValue);return boardValue.sections.filter(section=>section.isLane===true)}
-  function normalSections(boardValue){defaultSection(boardValue);return boardValue.sections.filter(section=>section.isLane!==true)}
+  function groupSections(boardValue){defaultSection(boardValue,false);return(Array.isArray(boardValue?.sections)?boardValue.sections:[]).filter(section=>section.isLane===true)}
+  function normalSections(boardValue){defaultSection(boardValue,false);return(Array.isArray(boardValue?.sections)?boardValue.sections:[]).filter(section=>section.isLane!==true)}
   function clearDragState(){draggedGroupId=null;dragCard=null;document.querySelectorAll(".board-card-group,.board-normal-area,.memo-card").forEach(element=>element.classList.remove("dragging","drag-over"))}
 
   window.boardDefaultSection=defaultSection;
-  prepareBoards();
-  const baseEnsureCurrentData=ensureCurrentData;
-  ensureCurrentData=function(){baseEnsureCurrentData();prepareBoards()};
 
-  addSection=function(){
-    const current=board(),name=prompt("区分名","新しい区分");if(!current||!name?.trim())return;
-    const before=historyBefore();defaultSection(current);current.sections.push({id:uid(),name:name.trim(),cards:[],isDefault:false,isLane:true,showOnHome:false});
-    finishGroupChange("区分を追加",before);standardAction("区分を追加",name.trim(),"save")
+  addSection=function(value){
+    const current=board(),name=String(value||"").trim();if(!current||!name)return false;
+    const before=historyBefore();defaultSection(current);current.sections.push({id:uid(),name,cards:[],isDefault:false,isLane:true,showOnHome:false});
+    finishGroupChange("区分を追加",before);standardAction("区分を追加",name,"save");return true
   };
   function renameGroup(id){
     const current=board(),section=current?.sections.find(item=>item.id===id);if(!section||section.isLane!==true)return;
@@ -80,9 +77,9 @@
   };
 
   renderBoard=function(){
-    const current=board();if(!current)return;const normal=defaultSection(current);
+    const current=board();if(!current)return;const normal=defaultSection(current,false);
     E.currentBoardTitle.textContent=current.name;updateBoardPin();const tags=[...new Set(current.sections.flatMap(section=>section.cards.flatMap(card=>card.tags)))].sort(),old=E.tagFilter.value;E.tagFilter.innerHTML='<option value="">すべてのタグ</option>'+tags.map(tag=>`<option value="${esc(tag)}">${esc(tag)}</option>`).join("");if(tags.includes(old))E.tagFilter.value=old;
-    E.sectionBoard.innerHTML="";const normalArea=document.createElement("div");normalArea.className="board-normal-area";normalArea.dataset.sectionId=normal.id;normalArea.appendChild(cardGrid(normal,{normal:true,sources:normalSections(current)}));E.sectionBoard.appendChild(normalArea);
+    E.sectionBoard.innerHTML="";if(normal){const normalArea=document.createElement("div");normalArea.className="board-normal-area";normalArea.dataset.sectionId=normal.id;normalArea.appendChild(cardGrid(normal,{normal:true,sources:normalSections(current)}));E.sectionBoard.appendChild(normalArea)}
     groupSections(current).forEach(section=>E.sectionBoard.appendChild(renderSection(section)));selectionUI()
   };
 
@@ -110,5 +107,10 @@
   };
   const baseOpenCardModal=openCardModal;
   openCardModal=function(id=null,boardId=null,sectionId=null){baseOpenCardModal(id,boardId,sectionId);if(id){const found=findCard(id);if(found&&found.s.isLane!==true)E.cardSectionInput.value=defaultSection(found.b).id}};
-  E.addSectionButton.textContent="＋ 区分";E.addSectionButton.onclick=addSection;
+  const createPanel=get("boardSectionCreatePanel"),nameInput=get("boardSectionNameInput"),confirmButton=get("confirmBoardSectionButton"),cancelButton=get("cancelBoardSectionButton");
+  function closeSectionCreate(){nameInput.value="";createPanel.classList.add("hidden")}
+  function openSectionCreate(){createPanel.classList.remove("hidden");setTimeout(()=>nameInput.focus(),20)}
+  function confirmSectionCreate(){if(addSection(nameInput.value))closeSectionCreate()}
+  E.addSectionButton.textContent="＋ 区分";E.addSectionButton.onclick=openSectionCreate;confirmButton.onclick=confirmSectionCreate;cancelButton.onclick=closeSectionCreate;
+  nameInput.onkeydown=event=>{if(event.key==="Enter"){event.preventDefault();confirmSectionCreate()}if(event.key==="Escape")closeSectionCreate()};
 })();
