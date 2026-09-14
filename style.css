@@ -7104,17 +7104,18 @@ body[data-theme="dopaboy"] .board-overview-filters button.active,body[data-theme
 }
 
 /* ===== board planner, shared create routes, and calendar month clarity ===== */
-.board-overview-list{display:flex;align-items:stretch;gap:8px;margin-bottom:14px;padding:2px 1px 7px;overflow-x:auto;overscroll-behavior-inline:contain}
-.board-switch-button,.board-overview-row{flex:0 0 auto;min-width:136px;min-height:72px;border:1px solid var(--border);border-radius:11px;background:var(--panel);box-shadow:none}
+.board-overview-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,220px));align-items:stretch;gap:8px;margin-bottom:14px;padding:2px 1px 7px;overflow:visible}
+.board-switch-button,.board-overview-row{width:100%;min-width:0;min-height:72px;border:1px solid var(--border);border-radius:11px;background:var(--panel);box-shadow:none}
 .board-switch-button{display:grid;align-content:center;gap:3px;padding:8px 13px;color:var(--text);text-align:left}
 .board-switch-button strong,.board-switch-button small{display:block}.board-switch-button small{color:var(--muted)}
 .board-overview-row{display:grid;grid-template-columns:minmax(76px,1fr) 38px;grid-template-rows:32px 32px;gap:2px 5px;padding:5px 6px 5px 12px;cursor:grab}
 .board-overview-row.active,.board-switch-button.active{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,var(--panel));color:var(--accent)}
 .board-overview-main{grid-row:1/3;align-content:space-between;padding:5px 0}.board-overview-main strong{font-size:13px}.board-overview-main small{font-size:10px}
-.board-overview-row .board-pin-button{grid-column:2;grid-row:2;place-self:center;width:38px;height:32px;font-size:17px}
-.board-row-actions{position:relative;grid-column:2;grid-row:1;place-self:center}
+.board-overview-row .board-pin-button{grid-column:2;grid-row:1;place-self:center;width:38px;height:32px;border:1px solid var(--border);background:var(--panel2);font-size:17px}
+.board-row-actions{position:relative;grid-column:2;grid-row:2;place-self:center}
 .board-row-actions>summary{display:grid;place-items:center;width:38px;height:32px;border:0;border-radius:8px;background:transparent;color:var(--muted);list-style:none;font-weight:900;cursor:pointer}
-.board-row-actions>summary::-webkit-details-marker{display:none}.board-row-actions>summary:hover{background:var(--panel2);color:var(--text)}
+.board-row-actions>summary::-webkit-details-marker{display:none}.board-row-actions>summary{border:1px solid var(--border);background:var(--panel2)}.board-row-actions>summary:hover,.board-overview-row .board-pin-button:hover{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,var(--panel));color:var(--accent)}
+.board-row-actions>summary:focus-visible,.board-overview-row .board-pin-button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 .board-row-actions-panel{position:fixed;z-index:85;top:var(--board-menu-top);left:var(--board-menu-left);display:grid;min-width:132px;padding:5px;border:1px solid var(--border);border-radius:9px;background:var(--panel);box-shadow:var(--shadow)}
 .board-row-actions-panel button{border:0;border-radius:7px;background:transparent;color:var(--text);padding:8px 9px;text-align:left;white-space:nowrap}.board-row-actions-panel button:hover{background:var(--panel2)}.board-row-actions-panel button.danger{color:var(--danger)}
 .board-overview-row .board-order-controls{grid-column:1/-1;grid-row:3;justify-content:flex-end}.board-overview-row .board-order-controls button{width:30px;height:28px}
@@ -7136,11 +7137,12 @@ body[data-theme="dopaboy"] .board-overview-toolbar input,body[data-theme="dopabo
 body[data-theme="dopaboy"] .calendar-day.outside{background:#10091d!important;border-color:#39285e!important;box-shadow:none!important;clip-path:none!important}body[data-theme="dopaboy"] .calendar-day.outside .calendar-date-number{background:#24163e!important;color:#aaa0bf!important;box-shadow:none!important;clip-path:none!important}
 body[data-theme="dopaboy"] .calendar-day.today{outline:3px solid #00f0ff;outline-offset:1px}body[data-theme="dopaboy"] .calendar-day.today .calendar-date-number{background:#00f0ff!important;color:#08101a!important;opacity:1;box-shadow:0 0 12px rgba(0,240,255,.52)!important}
 @media(max-width:820px){
-  .board-overview-list{margin-inline:-2px}.board-switch-button,.board-overview-row{min-width:126px}
+  .board-overview-list{grid-template-columns:repeat(2,minmax(0,1fr));margin-inline:-2px}.board-switch-button,.board-overview-row{min-width:0}
   .board-overview-row{grid-template-columns:minmax(72px,1fr) 38px}.board-overview-row .board-order-controls{display:flex}
   .board-overview-toolbar{grid-template-columns:minmax(0,1fr) auto}.board-overview-toolbar input{grid-column:1/-1}.board-overview-toolbar select{min-width:0}
   .board-overview-task-list{grid-template-columns:1fr}.board-task-row{min-height:80px}
 }
+@media(max-width:340px){.board-overview-list{grid-template-columns:1fr}}
 @media(max-width:390px){.board-overview-toolbar{grid-template-columns:1fr}.board-overview-toolbar input{grid-column:auto}.board-overview-toolbar .primary-button{width:100%}.calendar-detail-head{align-items:stretch;flex-direction:column}.calendar-detail-head .primary-button{width:100%}}
 
 /* ===== task completion roles and lightweight calendar history ===== */
@@ -7182,15 +7184,13 @@ body[data-theme="dopaboy"] .board-task-row.normal{border-inline-start-width:5px;
 .board-actions-menu:not([open])>.board-actions-menu-panel,.board-row-actions:not([open])>.board-row-actions-panel,.board-group-actions:not([open])>.board-group-actions-panel,.card-actions-menu:not([open])>.card-actions-menu-panel{display:none}
 .board-group-card-grid{min-height:0}
 .board-group-empty{grid-column:1/-1;padding:7px 9px;border:1px dashed var(--border);border-radius:8px;color:var(--muted);font-size:11px;text-align:center}
-.board-add-group-row{display:flex;justify-content:flex-start}
-.board-add-group-button{padding:7px 9px;color:var(--muted)}
 .memo-card.dragging{opacity:.42}
 .memo-card.drag-over{outline:2px solid var(--accent);outline-offset:2px}
 body[data-theme="black"] .board-card-group{background:#121821;border-color:#394659}
 body[data-theme="dopaboy"] .board-card-group{border:2px solid #65469f;border-radius:5px;background:#17102c;box-shadow:3px 3px 0 rgba(0,240,255,.14)}
 body[data-theme="dopaboy"] .board-group-actions>summary{border:2px solid #00f0ff;border-radius:3px;background:#221541;color:#fff}
 body[data-theme="dopaboy"] .board-group-actions-panel{border:2px solid #00f0ff;border-radius:4px;background:#160c2d;box-shadow:4px 4px 0 #ff008c}
-@media(max-width:820px){.board-group-card-grid{grid-template-columns:minmax(0,1fr)}#boardView .board-group-card-grid>.memo-card{min-height:0}.board-card-group{padding:10px}.board-group-drag{display:none}.board-group-header{margin-bottom:8px}.board-group-actions-panel{max-width:calc(100vw - 52px)}.board-group-empty{padding:9px}.board-add-group-button{min-height:42px}}
+@media(max-width:820px){.board-group-card-grid{grid-template-columns:minmax(0,1fr)}#boardView .board-group-card-grid>.memo-card{min-height:0}.board-card-group{padding:10px}.board-group-drag{display:none}.board-group-header{margin-bottom:8px}.board-group-actions-panel{max-width:calc(100vw - 52px)}.board-group-empty{padding:9px}}
 
 /* Compact DOPA feedback used only for lightweight-task completion. */
 .dopa-quick-clear-fx{position:fixed;z-index:2940;width:156px;height:112px;pointer-events:none;transform:translate(-50%,-50%);animation:dopaQuickFx .86s ease-out both}.dopa-quick-clear-stamp{position:absolute;left:50%;top:50%;display:grid;grid-template-columns:auto auto;align-items:center;gap:2px 6px;width:max-content;padding:7px 10px;border:2px solid #ffe600;background:#170c30;color:#fff;box-shadow:4px 4px 0 #ff008c,0 0 14px rgba(0,240,255,.65);transform:translate(-50%,-50%) rotate(-3deg);animation:dopaQuickStamp .62s cubic-bezier(.15,1.55,.3,1) both}.dopa-quick-clear-stamp b{grid-row:1/3;display:grid;place-items:center;width:27px;height:27px;border-radius:50%;background:#39ff88;color:#07130d;font-size:19px;animation:dopaQuickCheck .48s cubic-bezier(.15,1.7,.3,1) both}.dopa-quick-clear-stamp span{font:1000 13px/1 system-ui,sans-serif;letter-spacing:.08em}.dopa-quick-clear-stamp small{color:#00f0ff;font:1000 11px/1 system-ui,sans-serif}.dopa-quick-energy{position:absolute;left:23px;right:23px;bottom:16px;height:4px;border:1px solid #00f0ff;background:#130727}.dopa-quick-energy::after{content:"";display:block;height:100%;background:linear-gradient(90deg,#00f0ff,#39ff88,#ffe600);transform-origin:left;animation:dopaQuickCharge .52s ease-out both}.dopa-quick-spark{position:absolute;left:50%;top:47%;width:5px;height:10px;background:#ffe600;box-shadow:0 0 7px #00f0ff;animation:dopaQuickSpark .58s ease-out both}

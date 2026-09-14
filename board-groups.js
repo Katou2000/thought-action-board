@@ -83,8 +83,7 @@
     const current=board();if(!current)return;const normal=defaultSection(current);
     E.currentBoardTitle.textContent=current.name;updateBoardPin();const tags=[...new Set(current.sections.flatMap(section=>section.cards.flatMap(card=>card.tags)))].sort(),old=E.tagFilter.value;E.tagFilter.innerHTML='<option value="">すべてのタグ</option>'+tags.map(tag=>`<option value="${esc(tag)}">${esc(tag)}</option>`).join("");if(tags.includes(old))E.tagFilter.value=old;
     E.sectionBoard.innerHTML="";const normalArea=document.createElement("div");normalArea.className="board-normal-area";normalArea.dataset.sectionId=normal.id;normalArea.appendChild(cardGrid(normal,{normal:true,sources:normalSections(current)}));E.sectionBoard.appendChild(normalArea);
-    groupSections(current).forEach(section=>E.sectionBoard.appendChild(renderSection(section)));
-    const addRow=document.createElement("div");addRow.className="board-add-group-row";const add=document.createElement("button");add.type="button";add.className="text-button board-add-group-button";add.textContent="＋ 区分";add.onclick=addSection;addRow.appendChild(add);E.sectionBoard.appendChild(addRow);selectionUI()
+    groupSections(current).forEach(section=>E.sectionBoard.appendChild(renderSection(section)));selectionUI()
   };
 
   dropSection=function(event,sectionId){
