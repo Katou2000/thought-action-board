@@ -6997,7 +6997,7 @@ body[data-theme="dopaboy"] .sidebar-global-search-panel{border:2px solid #65469f
 }
 
 /* ===== v1.4 information architecture ===== */
-:root{--space-xs:6px;--space-sm:10px;--space-md:16px;--space-lg:24px;--space-xl:34px}
+:root{--space-xs:6px;--space-sm:10px;--space-md:16px;--space-lg:24px;--space-xl:34px;--board-task-card-width:330px}
 .sidebar{padding:var(--space-lg) 18px}.brand-row{margin-bottom:var(--space-lg)}.main-nav{gap:var(--space-xs)}.main-nav [data-nav-key="boards"],.main-nav [data-nav-key="shortcuts"]{margin-top:var(--space-sm);padding-top:12px;border-top-color:var(--border)}
 .main-content{padding-top:var(--space-md)}.utility-bar{position:sticky;top:0;z-index:24;display:flex;align-items:center;gap:8px;min-height:52px;margin:0 0 var(--space-lg);padding:8px 10px;border:1px solid var(--border);border-radius:12px;background:color-mix(in srgb,var(--panel) 94%,transparent);box-shadow:0 7px 22px rgba(15,23,42,.07);backdrop-filter:blur(12px)}.utility-spacer{flex:1}.utility-icon-button{display:grid;place-items:center;flex:0 0 38px;width:38px;height:38px;padding:0;border:1px solid var(--border);border-radius:10px;background:var(--panel2);color:var(--text);font-size:16px;font-weight:900}.utility-add-button{border-color:var(--accent);background:var(--accent);color:#fff;font-size:22px}.utility-bar .app-back-button{margin:0;box-shadow:none}.utility-search{position:relative;display:block;width:auto;margin:0}.utility-search .sidebar-search-icon-button{width:38px;height:38px}.utility-search .sidebar-global-search-panel{position:absolute;top:46px;right:0;z-index:40;width:min(420px,calc(100vw - var(--side) - 90px));min-width:300px;margin:0;box-shadow:var(--shadow)}
 body[data-theme="dopaboy"] .utility-bar{top:29px;border:2px solid #00f0ff;border-radius:5px;background:#130727;box-shadow:5px 5px 0 #ff008c}body[data-theme="dopaboy"] .utility-icon-button{border:2px solid #65469f;border-radius:4px;background:#221541;color:#fff}body[data-theme="dopaboy"] .utility-add-button{border-color:#ffe600;background:#ff008c;box-shadow:2px 2px 0 #00f0ff}
@@ -7105,23 +7105,23 @@ body[data-theme="dopaboy"] .board-overview-filters button.active,body[data-theme
 
 /* ===== board planner, shared create routes, and calendar month clarity ===== */
 .board-overview-list{display:flex;align-items:stretch;gap:8px;margin-bottom:14px;padding:2px 1px 7px;overflow-x:auto;overscroll-behavior-inline:contain}
-.board-switch-button,.board-overview-row{flex:0 0 auto;min-width:126px;min-height:58px;border:1px solid var(--border);border-radius:11px;background:var(--panel);box-shadow:none}
+.board-switch-button,.board-overview-row{flex:0 0 auto;min-width:136px;min-height:72px;border:1px solid var(--border);border-radius:11px;background:var(--panel);box-shadow:none}
 .board-switch-button{display:grid;align-content:center;gap:3px;padding:8px 13px;color:var(--text);text-align:left}
 .board-switch-button strong,.board-switch-button small{display:block}.board-switch-button small{color:var(--muted)}
-.board-overview-row{display:grid;grid-template-columns:minmax(54px,1fr) 32px 32px;gap:2px;padding:5px 6px 5px 12px;cursor:grab}
+.board-overview-row{display:grid;grid-template-columns:minmax(76px,1fr) 38px;grid-template-rows:32px 32px;gap:2px 5px;padding:5px 6px 5px 12px;cursor:grab}
 .board-overview-row.active,.board-switch-button.active{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,var(--panel));color:var(--accent)}
-.board-overview-main{align-content:center;padding:3px 0}.board-overview-main strong{font-size:13px}.board-overview-main small{font-size:10px}
-.board-overview-row .board-pin-button{width:32px;height:32px;align-self:center;font-size:17px}
-.board-row-actions{position:relative;align-self:center}
-.board-row-actions>summary{display:grid;place-items:center;width:32px;height:32px;border:0;border-radius:8px;background:transparent;color:var(--muted);list-style:none;font-weight:900;cursor:pointer}
+.board-overview-main{grid-row:1/3;align-content:space-between;padding:5px 0}.board-overview-main strong{font-size:13px}.board-overview-main small{font-size:10px}
+.board-overview-row .board-pin-button{grid-column:2;grid-row:2;place-self:center;width:38px;height:32px;font-size:17px}
+.board-row-actions{position:relative;grid-column:2;grid-row:1;place-self:center}
+.board-row-actions>summary{display:grid;place-items:center;width:38px;height:32px;border:0;border-radius:8px;background:transparent;color:var(--muted);list-style:none;font-weight:900;cursor:pointer}
 .board-row-actions>summary::-webkit-details-marker{display:none}.board-row-actions>summary:hover{background:var(--panel2);color:var(--text)}
 .board-row-actions-panel{position:fixed;z-index:85;top:var(--board-menu-top);left:var(--board-menu-left);display:grid;min-width:132px;padding:5px;border:1px solid var(--border);border-radius:9px;background:var(--panel);box-shadow:var(--shadow)}
 .board-row-actions-panel button{border:0;border-radius:7px;background:transparent;color:var(--text);padding:8px 9px;text-align:left;white-space:nowrap}.board-row-actions-panel button:hover{background:var(--panel2)}.board-row-actions-panel button.danger{color:var(--danger)}
-.board-overview-row .board-order-controls{grid-column:1/-1;justify-content:flex-end}.board-overview-row .board-order-controls button{width:30px;height:28px}
+.board-overview-row .board-order-controls{grid-column:1/-1;grid-row:3;justify-content:flex-end}.board-overview-row .board-order-controls button{width:30px;height:28px}
 .board-all-panel{padding:14px}.board-overview-toolbar{display:grid;grid-template-columns:minmax(180px,1fr) minmax(135px,auto) auto;gap:8px;align-items:center}
 .board-overview-toolbar input,.board-overview-toolbar select{min-width:0;width:100%;height:40px;padding:8px 10px;border:1px solid var(--border);border-radius:9px;background:var(--panel);color:var(--text)}
 .board-overview-toolbar .primary-button{min-height:40px;white-space:nowrap}
-.board-overview-task-list{grid-template-columns:repeat(auto-fit,minmax(min(100%,330px),1fr));align-items:stretch}
+.board-overview-task-list{grid-template-columns:repeat(auto-fill,var(--board-task-card-width));justify-content:start;align-items:stretch}
 .board-task-row{align-content:start;min-height:88px;background:var(--panel)}
 .board-task-main{align-content:start}.board-task-main strong{font-size:14px}.board-task-main>small{margin-top:2px}
 .board-task-tags,.board-task-dates{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}.board-task-tags .tag-chip{font-size:9px;padding:2px 5px}.board-task-dates small{color:var(--muted);font-size:10px}
@@ -7136,8 +7136,8 @@ body[data-theme="dopaboy"] .board-overview-toolbar input,body[data-theme="dopabo
 body[data-theme="dopaboy"] .calendar-day.outside{background:#10091d!important;border-color:#39285e!important;box-shadow:none!important;clip-path:none!important}body[data-theme="dopaboy"] .calendar-day.outside .calendar-date-number{background:#24163e!important;color:#aaa0bf!important;box-shadow:none!important;clip-path:none!important}
 body[data-theme="dopaboy"] .calendar-day.today{outline:3px solid #00f0ff;outline-offset:1px}body[data-theme="dopaboy"] .calendar-day.today .calendar-date-number{background:#00f0ff!important;color:#08101a!important;opacity:1;box-shadow:0 0 12px rgba(0,240,255,.52)!important}
 @media(max-width:820px){
-  .board-overview-list{margin-inline:-2px}.board-switch-button,.board-overview-row{min-width:116px}
-  .board-overview-row{grid-template-columns:minmax(48px,1fr) 32px 32px}.board-overview-row .board-order-controls{display:flex}
+  .board-overview-list{margin-inline:-2px}.board-switch-button,.board-overview-row{min-width:126px}
+  .board-overview-row{grid-template-columns:minmax(72px,1fr) 38px}.board-overview-row .board-order-controls{display:flex}
   .board-overview-toolbar{grid-template-columns:minmax(0,1fr) auto}.board-overview-toolbar input{grid-column:1/-1}.board-overview-toolbar select{min-width:0}
   .board-overview-task-list{grid-template-columns:1fr}.board-task-row{min-height:80px}
 }
@@ -7156,7 +7156,7 @@ body[data-theme="dopaboy"] .board-task-row.normal{border-inline-start-width:5px;
 
 /* Optional board grouping: ordinary cards stay frameless; only named groups get a compact frame. */
 .board-normal-area{min-width:0}
-.board-group-card-grid{grid-template-columns:repeat(auto-fill,minmax(min(100%,210px),220px));justify-content:start;align-items:stretch}
+.board-group-card-grid{grid-template-columns:repeat(auto-fill,var(--board-task-card-width));justify-content:start;align-items:stretch}
 #boardView .board-group-card-grid>.memo-card{display:flex;flex-direction:column;width:100%;min-width:0;min-height:172px;grid-template-columns:none;grid-template-areas:none;align-items:stretch}
 #boardView .board-group-card-grid>.memo-card>.card-head,#boardView .board-group-card-grid>.memo-card>.card-info,#boardView .board-group-card-grid>.memo-card>.card-footer{grid-area:auto}
 #boardView .board-group-card-grid>.memo-card>.card-info{margin-top:auto}
@@ -7179,6 +7179,7 @@ body[data-theme="dopaboy"] .board-task-row.normal{border-inline-start-width:5px;
 .board-group-actions-panel button:hover{background:var(--panel2)}
 .board-group-actions-panel button.danger{color:var(--danger)}
 .board-group-actions-panel button:disabled{opacity:.38}
+.board-actions-menu:not([open])>.board-actions-menu-panel,.board-row-actions:not([open])>.board-row-actions-panel,.board-group-actions:not([open])>.board-group-actions-panel,.card-actions-menu:not([open])>.card-actions-menu-panel{display:none}
 .board-group-card-grid{min-height:0}
 .board-group-empty{grid-column:1/-1;padding:7px 9px;border:1px dashed var(--border);border-radius:8px;color:var(--muted);font-size:11px;text-align:center}
 .board-add-group-row{display:flex;justify-content:flex-start}

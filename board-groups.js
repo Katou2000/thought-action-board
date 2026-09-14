@@ -62,7 +62,7 @@
     grid.ondrop=event=>{grid.closest(".board-card-group,.board-normal-area")?.classList.remove("drag-over");dropSection(event,section.id)};
     const visible=filterCards(sources.flatMap(source=>source.cards));
     if(visible.length)visible.forEach(card=>grid.appendChild(renderCard(card,findCard(card.id)?.s.id||section.id)));
-    else{const empty=document.createElement("div");empty.className="board-group-empty";empty.textContent=normal?"カードをここへ戻せます。":"ここへカードを移動できます。";grid.appendChild(empty)}
+    else if(!normal||groupSections(board()).length){const empty=document.createElement("div");empty.className="board-group-empty";empty.textContent=normal?"ここへドロップで通常一覧に戻す":"ここへカードを移動できます。";grid.appendChild(empty)}
     return grid
   }
 
